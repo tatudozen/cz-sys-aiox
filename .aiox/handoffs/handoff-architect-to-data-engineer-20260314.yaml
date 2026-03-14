@@ -1,0 +1,22 @@
+handoff:
+  from_agent: "architect"
+  to_agent: "data-engineer"
+  consumed: true
+  timestamp: "2026-03-14T01:00:00Z"
+  story_context:
+    story_id: "N/A - Architecture phase"
+    story_path: "docs/architecture/copyzen-architecture.md"
+    story_status: "Architecture v0.2 complete"
+    current_task: "Architecture complete. Need detailed DDL with indexes, constraints, RLS policies."
+    branch: "N/A - greenfield, no git repo"
+  decisions:
+    - "Supabase Cloud (PostgreSQL 15+) for all CopyZen data"
+    - "Local PostgreSQL stays exclusive for n8n"
+    - "RLS on all tables with client_id for multi-tenant isolation"
+    - "13 tables defined in conceptual schema (Section 9 of architecture doc)"
+    - "New brand_intelligence table for Apify/Firecrawl scraping output (FR-27/28/29)"
+  files_modified:
+    - "docs/prd/copyzen-prd-v1.md (v0.3 - added FR-27/28/29, Story 2.6)"
+    - "docs/architecture/copyzen-architecture.md (v0.2 - brand intelligence additions)"
+  blockers: []
+  next_action: "Create detailed DDL: indexes, constraints, triggers, RLS policies for all 13 tables. Output as Supabase migration files in supabase/migrations/."

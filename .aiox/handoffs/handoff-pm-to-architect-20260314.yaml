@@ -1,0 +1,21 @@
+handoff:
+  from_agent: "pm"
+  to_agent: "architect"
+  consumed: true
+  timestamp: "2026-03-14T00:00:00Z"
+  story_context:
+    story_id: "N/A - PRD phase"
+    story_path: "docs/prd/copyzen-prd-v1.md"
+    story_status: "PRD Complete (v0.2)"
+    current_task: "PRD complete with 7 epics, 31 stories. Delegation to architect for architecture design."
+    branch: "N/A - greenfield, no git repo"
+  decisions:
+    - "Astro SSG (not Next.js) for static landing/sales pages"
+    - "Docker Swarm + Traefik + nginx:alpine + Portainer UI (not Caddy/CLI)"
+    - "Supabase Cloud for multi-tenant data (not local PostgreSQL)"
+    - "n8n as central orchestrator for agent pipeline"
+    - "Monorepo with 5 packages: core, funwheel, sales-page, agents, integrations"
+  files_modified:
+    - "docs/prd/copyzen-prd-v1.md"
+  blockers: []
+  next_action: "Review PRD and create fullstack architecture document. Assess complexity per epic."
