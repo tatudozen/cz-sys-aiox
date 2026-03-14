@@ -1,0 +1,182 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2026-03-14",
+  "designer": "Uma (UX-Design-Expert)",
+  "colors": {
+    "primary": {
+      "name": "Primary Dark Navy",
+      "value": "#08164a",
+      "rgb": "rgb(8, 22, 74)",
+      "description": "Main brand color - dark, professional"
+    },
+    "secondary": {
+      "name": "Secondary Cyan",
+      "value": "#38bafc",
+      "rgb": "rgb(56, 186, 252)",
+      "description": "Accent color - bright, energetic"
+    },
+    "gradients": {
+      "primary": {
+        "name": "Primary Gradient",
+        "value": "linear-gradient(135deg, #08164a 0%, #38bafc 100%)",
+        "description": "Main brand gradient (diagonal)"
+      },
+      "dark": {
+        "name": "Dark Gradient",
+        "value": "linear-gradient(180deg, #1a1a2e 0%, #08164a 100%)",
+        "description": "Dark backgrounds (top to bottom)"
+      },
+      "light": {
+        "name": "Light Gradient",
+        "value": "linear-gradient(135deg, #38bafc 0%, #f8f9fa 100%)",
+        "description": "Light backgrounds with secondary accent"
+      }
+    },
+    "neutral": {
+      "50": "#f8f9fa",
+      "100": "#f0f2f5",
+      "200": "#e8ebf0",
+      "300": "#d0d7e0",
+      "400": "#b8bfcc",
+      "500": "#90979f",
+      "600": "#666666",
+      "700": "#333333",
+      "800": "#1a1a1a",
+      "900": "#0d0d0d"
+    },
+    "semantic": {
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#38bafc",
+      "disabled": "#b8bfcc"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "primary": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      "mono": "'Courier New', monospace"
+    },
+    "sizes": {
+      "xs": "12px",
+      "sm": "14px",
+      "base": "16px",
+      "lg": "18px",
+      "xl": "20px",
+      "2xl": "24px",
+      "3xl": "32px",
+      "4xl": "40px",
+      "5xl": "48px"
+    },
+    "weights": {
+      "light": 300,
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "lineHeights": {
+      "tight": 1.2,
+      "snug": 1.375,
+      "normal": 1.5,
+      "relaxed": 1.625,
+      "loose": 2
+    },
+    "headings": {
+      "h1": {
+        "fontSize": "32px",
+        "fontWeight": 700,
+        "lineHeight": 1.2,
+        "color": "#1a1a2e",
+        "letterSpacing": "-0.02em"
+      },
+      "h2": {
+        "fontSize": "24px",
+        "fontWeight": 700,
+        "lineHeight": 1.3,
+        "color": "#1a1a2e"
+      },
+      "h3": {
+        "fontSize": "20px",
+        "fontWeight": 600,
+        "lineHeight": 1.4,
+        "color": "#08164a"
+      },
+      "body": {
+        "fontSize": "16px",
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "#333333"
+      },
+      "small": {
+        "fontSize": "14px",
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "#666666"
+      }
+    }
+  },
+  "spacing": {
+    "base": "4px",
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "48px",
+    "3xl": "64px",
+    "4xl": "80px",
+    "5xl": "96px"
+  },
+  "breakpoints": {
+    "mobile": {
+      "name": "Mobile",
+      "value": "0px",
+      "maxWidth": "639px"
+    },
+    "tablet": {
+      "name": "Tablet",
+      "value": "640px",
+      "maxWidth": "1023px"
+    },
+    "desktop": {
+      "name": "Desktop",
+      "value": "1024px",
+      "maxWidth": "9999px"
+    }
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    "base": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+    "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+  },
+  "borderRadius": {
+    "none": "0px",
+    "sm": "2px",
+    "base": "4px",
+    "md": "6px",
+    "lg": "8px",
+    "xl": "12px",
+    "2xl": "16px",
+    "3xl": "24px",
+    "full": "9999px"
+  },
+  "transitions": {
+    "fast": "150ms ease-in-out",
+    "base": "200ms ease-in-out",
+    "slow": "300ms ease-in-out"
+  },
+  "accessibility": {
+    "focusOutline": {
+      "width": "2px",
+      "color": "#38bafc",
+      "offset": "2px"
+    },
+    "minTouchTarget": "44px",
+    "contrastRatio": "4.5:1"
+  }
+}
