@@ -1,0 +1,169 @@
+{
+  "name": "proposal-response-handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "proposal-response",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: Proposal Response",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "proposal-response",
+      "notes": "Client clicks approval/rejection link. Query params: proposal_id, decision"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "is-approved",
+              "leftValue": "={{ $json.query.decision }}",
+              "rightValue": "approved",
+              "operator": {"type": "string", "operation": "equals"}
+            }
+          ]
+        }
+      },
+      "id": "check-decision",
+      "name": "IF: Decision Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=representation"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\": \"approved\"}",
+        "options": {}
+      },
+      "id": "update-approved",
+      "name": "Supabase: Update → approved",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 220]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings?id=eq.{{ $json[0].briefing_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=minimal"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\": \"approved\"}",
+        "options": {}
+      },
+      "id": "update-briefing-approved",
+      "name": "Supabase: Update Briefing → approved",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.N8N_WEBHOOK_BASE_URL }}/webhook/dispatch-specific-surveys",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"proposal_id\": \"{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}\", \"briefing_id\": \"{{ $('Supabase: Update → approved').item.json[0].briefing_id }}\", \"package\": \"{{ $('Supabase: Update → approved').item.json[0].package }}\"}",
+        "options": {}
+      },
+      "id": "trigger-surveys",
+      "name": "HTTP: Trigger Dispatch Surveys",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 220],
+      "continueOnFail": true,
+      "notes": "Triggers Story 2.5 workflow"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Proposta Aprovada</title></head><body style='font-family:sans-serif;text-align:center;padding:40px'><h1>✅ Proposta aprovada!</h1><p>Ótimo! Vamos começar. Em breve você receberá os próximos passos por WhatsApp.</p></body></html>",
+        "options": {"responseCode": 200}
+      },
+      "id": "respond-approved",
+      "name": "Response: Approved HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 220]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=minimal"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\": \"rejected\"}",
+        "options": {}
+      },
+      "id": "update-rejected",
+      "name": "Supabase: Update → rejected",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Proposta Recusada</title></head><body style='font-family:sans-serif;text-align:center;padding:40px'><h1>Obrigado pelo retorno!</h1><p>Entendemos. Se mudar de ideia ou quiser conversar sobre outras opções, pode responder nossa mensagem no WhatsApp.</p></body></html>",
+        "options": {"responseCode": 200}
+      },
+      "id": "respond-rejected",
+      "name": "Response: Rejected HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Webhook: Proposal Response": {"main": [[{"node": "IF: Decision Approved?", "type": "main", "index": 0}]]},
+    "IF: Decision Approved?": {
+      "main": [
+        [{"node": "Supabase: Update → approved", "type": "main", "index": 0}],
+        [{"node": "Supabase: Update → rejected", "type": "main", "index": 0}]
+      ]
+    },
+    "Supabase: Update → approved": {"main": [[{"node": "Supabase: Update Briefing → approved", "type": "main", "index": 0}]]},
+    "Supabase: Update Briefing → approved": {"main": [[{"node": "HTTP: Trigger Dispatch Surveys", "type": "main", "index": 0}]]},
+    "HTTP: Trigger Dispatch Surveys": {"main": [[{"node": "Response: Approved HTML", "type": "main", "index": 0}]]},
+    "Supabase: Update → rejected": {"main": [[{"node": "Response: Rejected HTML", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder": "v1"},
+  "meta": {"description": "Handles client approval/rejection of proposal. On approval: updates DB + triggers Story 2.5 dispatch. Story 2.4."},
+  "tags": [{"name": "sistema-0"}, {"name": "proposal"}]
+}

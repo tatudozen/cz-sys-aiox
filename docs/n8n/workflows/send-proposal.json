@@ -1,0 +1,119 @@
+{
+  "name": "send-proposal",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-proposal",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: Send Proposal (Manual)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "send-proposal",
+      "notes": "Triggered manually by Fernando. Input: { proposal_id: string }"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $json.body.proposal_id }}&select=*,briefings(raw_data,source),clients(name,email,phone)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-proposal",
+      "name": "Supabase: Fetch Proposal + Client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const proposal = $input.item.json[0];\nif (!proposal) throw new Error('Proposal not found');\n\nconst client = proposal.clients || {};\nconst briefing = proposal.briefings || {};\nconst raw = briefing.raw_data || {};\n\nconst approvalUrl = `${$env.N8N_WEBHOOK_BASE_URL}/webhook/proposal-response?proposal_id=${proposal.id}&decision=approved`;\nconst rejectionUrl = `${$env.N8N_WEBHOOK_BASE_URL}/webhook/proposal-response?proposal_id=${proposal.id}&decision=rejected`;\n\nconst packageLabels = {\n  ia: 'IA — Geração de Conteúdo',\n  art: 'A-R-T — FunWheel Completo',\n  e: 'E — Página de Vendas',\n  combo_leads: 'Combo Leads — IA + A-R-T',\n  combo_cash: 'Combo Cash — Funil Completo'\n};\n\nreturn [{\n  json: {\n    proposal_id: proposal.id,\n    briefing_id: proposal.briefing_id,\n    client_name: client.name || raw.nome_negocio || 'Cliente',\n    client_email: client.email || raw.email,\n    client_phone: raw.canal_comunicacao === 'WhatsApp' ? raw.phone : null,\n    package_label: packageLabels[proposal.package] || proposal.package,\n    reasoning: proposal.reasoning,\n    timeline: proposal.timeline,\n    cost_range: proposal.cost_range,\n    approval_url: approvalUrl,\n    rejection_url: rejectionUrl\n  }\n}];"
+      },
+      "id": "prepare-message",
+      "name": "Code: Prepare Proposal Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $env.EVOLUTION_API_HOST }}/message/sendText/{{ $env.EVOLUTION_INSTANCE_NAME }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.EVOLUTION_API_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.client_phone }}\",\n  \"text\": \"Olá, {{ $json.client_name }}! 🎯\\n\\nAnalisamos o briefing do *{{ $json.client_name }}* e temos uma proposta especial para você:\\n\\n📦 *Pacote Recomendado:* {{ $json.package_label }}\\n\\n💡 *Por que este pacote?*\\n{{ $json.reasoning }}\\n\\n⏱️ *Prazo estimado:* {{ $json.timeline }}\\n💰 *Investimento:* {{ $json.cost_range }}\\n\\nPara aprovar: {{ $json.approval_url }}\\nPara recusar: {{ $json.rejection_url }}\\n\\nDúvidas? É só responder esta mensagem! 😊\"\n}",
+        "options": {}
+      },
+      "id": "send-whatsapp",
+      "name": "HTTP: Send WhatsApp Proposal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 220],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Code: Prepare Proposal Message').item.json.proposal_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=minimal"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\": \"sent\"}",
+        "options": {}
+      },
+      "id": "update-status-sent",
+      "name": "Supabase: Update Proposal Status → sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"status\": \"sent\", \"proposal_id\": \"{{ $('Code: Prepare Proposal Message').item.json.proposal_id }}\"}",
+        "options": {"responseCode": 200}
+      },
+      "id": "respond-ok",
+      "name": "Response: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Send Proposal (Manual)": {"main": [[{"node": "Supabase: Fetch Proposal + Client", "type": "main", "index": 0}]]},
+    "Supabase: Fetch Proposal + Client": {"main": [[{"node": "Code: Prepare Proposal Message", "type": "main", "index": 0}]]},
+    "Code: Prepare Proposal Message": {"main": [[{"node": "HTTP: Send WhatsApp Proposal", "type": "main", "index": 0}]]},
+    "HTTP: Send WhatsApp Proposal": {"main": [[{"node": "Supabase: Update Proposal Status → sent", "type": "main", "index": 0}]]},
+    "Supabase: Update Proposal Status → sent": {"main": [[{"node": "Response: Success", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder": "v1"},
+  "meta": {"description": "Sends package proposal to client via WhatsApp (Evolution API). Manual trigger by Fernando. Story 2.4."},
+  "tags": [{"name": "sistema-0"}, {"name": "proposal"}]
+}
