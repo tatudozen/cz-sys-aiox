@@ -1,13 +1,10 @@
-name: Deploy
-
+# DEPRECATED — superseded by deploy-kvm4.yml (Story 1.3)
+# This file is kept for git history. Do not use.
+name: Deploy (Deprecated)
 on:
-  push:
-    branches: [main]
-
+  workflow_dispatch:
 jobs:
-  deploy:
+  notice:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Deploy notification
-        run: echo "Deploy workflow ready. Configure deployment target in settings."
+      - run: echo "This workflow is deprecated. Use deploy-kvm4.yml instead."

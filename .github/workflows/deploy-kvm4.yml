@@ -1,0 +1,50 @@
+name: Deploy KVM4
+
+on:
+  push:
+    branches: [main]
+
+# Only run after CI passes
+concurrency:
+  group: deploy-kvm4
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build FunWheel
+        run: npm run build -w packages/funwheel
+
+      - name: Deploy to KVM4 via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: packages/funwheel/dist/
+          remote_path: ${{ secrets.KVM4_DEPLOY_PATH }}
+          remote_host: ${{ secrets.KVM4_HOST }}
+          remote_user: ${{ secrets.KVM4_USER }}
+          remote_key: ${{ secrets.KVM4_SSH_KEY }}
