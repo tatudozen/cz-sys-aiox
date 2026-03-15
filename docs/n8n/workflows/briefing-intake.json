@@ -1,0 +1,230 @@
+{
+  "name": "briefing-intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "briefing-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: GHL Survey",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "briefing-intake"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-nome",
+              "leftValue": "={{ $json.body.nome_negocio }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "check-segmento",
+              "leftValue": "={{ $json.body.segmento }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "check-publico",
+              "leftValue": "={{ $json.body.publico_alvo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "check-objetivo",
+              "leftValue": "={{ $json.body.objetivo_principal }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "check-canal",
+              "leftValue": "={{ $json.body.canal_comunicacao }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "validate-fields",
+      "name": "Validate: Required Fields",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": null,\n  \"raw_data\": {{ JSON.stringify($('Webhook: GHL Survey').item.json.body) }},\n  \"source\": \"ghl_survey\",\n  \"status\": \"received\"\n}",
+        "options": {}
+      },
+      "id": "supabase-insert",
+      "name": "Supabase: INSERT briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Briefing recebido com sucesso\",\n  \"briefing_id\": \"{{ $json[0].id }}\"\n}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "respond-success",
+      "name": "Response: Success 201",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Campos obrigatórios ausentes: nome_negocio, segmento, publico_alvo, objetivo_principal, canal_comunicacao\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "respond-validation-error",
+      "name": "Response: Validation Error 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "subject": "=🚨 CopyZen: Erro no briefing-intake",
+        "message": "=Erro ao processar briefing de entrada:\n\nPayload: {{ JSON.stringify($('Webhook: GHL Survey').item.json.body, null, 2) }}\n\nErro: {{ $json.error?.message || $json.message || 'Erro desconhecido' }}\n\nTimestamp: {{ new Date().toISOString() }}"
+      },
+      "id": "error-notification",
+      "name": "Notify: Error Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [900, 520],
+      "continueOnFail": true,
+      "notes": "Configure SMTP credentials in n8n credentials. Target: fernando@copyzen.com.br"
+    }
+  ],
+  "connections": {
+    "Webhook: GHL Survey": {
+      "main": [
+        [
+          {
+            "node": "Validate: Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate: Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Supabase: INSERT briefing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response: Validation Error 400",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: INSERT briefing": {
+      "main": [
+        [
+          {
+            "node": "Response: Success 201",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": {
+    "description": "Receives GHL survey webhook, validates required fields, saves raw briefing to Supabase. Story 2.1.",
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "tags": [
+    {
+      "name": "sistema-0",
+      "createdAt": "2026-03-15"
+    },
+    {
+      "name": "briefing"
+    }
+  ]
+}
