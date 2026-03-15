@@ -1,0 +1,98 @@
+{
+  "name": "Notify Fernando (Operational Notifications)",
+  "description": "Story 7.5 AC-3/AC-4: Sends WhatsApp notifications to Fernando via Evolution API for key pipeline events: proposal ready, content delivered, FunWheel published, lead captured.",
+  "version": 1,
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "parameters": {
+        "path": "notify-fernando",
+        "method": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "notify-fernando-webhook"
+    },
+    {
+      "id": "2",
+      "name": "Validate & Format Message",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Validate required fields and format notification message\nconst body = $input.first().json;\n\nconst type = body.type ?? null;\nconst client = body.client ?? 'Cliente';\nconst details = body.details ?? '';\nconst link = body.link ?? '';\n\nif (!type) throw new Error('Missing required field: type');\n\n// CopyZen brand voice: conversacional, profissional, sem spam\nconst templates = {\n  proposal_ready: `🎯 *Proposta pronta para revisão!*\\n\\nCliente: ${client}\\n${details ? '\\n' + details : ''}${link ? '\\n\\n🔗 ' + link : ''}\\n\\n_Revise e aprove para continuar o pipeline._`,\n  content_delivered: `✅ *Conteúdo entregue no Drive!*\\n\\nCliente: ${client}\\n${details ? '\\n' + details : ''}${link ? '\\n\\n🔗 ' + link : ''}\\n\\n_Pronto para sua revisão._`,\n  funwheel_published: `🚀 *FunWheel publicado!*\\n\\nCliente: ${client}\\n${details ? '\\n' + details : ''}${link ? '\\n\\n🔗 ' + link : ''}\\n\\n_Acesse e teste o fluxo A-R-T._`,\n  lead_captured: `🎉 *Novo lead capturado!*\\n\\nCliente: ${client}\\n${details ? '\\n' + details : ''}${link ? '\\n\\n🔗 ' + link : ''}`,\n  pipeline_error: `⚠️ *Erro no pipeline*\\n\\nCliente: ${client}\\n${details ? '\\n' + details : ''}${link ? '\\n\\n🔗 ' + link : ''}\\n\\n_Verificar logs._`,\n};\n\nconst message = templates[type] ?? `📬 *Notificação CopyZen*\\n\\n${details}`;\n\nreturn [{\n  json: {\n    type,\n    client,\n    message,\n    sent_at: new Date().toISOString(),\n  }\n}];"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Send WhatsApp via Evolution API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/copyzen",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.EVOLUTION_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $env.FERNANDO_WHATSAPP_NUMBER, textMessage: { text: $json.message } }) }}"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Log Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agent_execution_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify({ agent: 'notify-fernando', event: $('Validate & Format Message').item.json.type, status: 'success', metadata: { client: $('Validate & Format Message').item.json.client, sent_at: $('Validate & Format Message').item.json.sent_at } }) }}"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1120, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"sent\", \"type\": \"{{ $('Validate & Format Message').item.json.type }}\" }"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[ { "node": "Validate & Format Message", "type": "main", "index": 0 } ]]
+    },
+    "Validate & Format Message": {
+      "main": [[ { "node": "Send WhatsApp via Evolution API", "type": "main", "index": 0 } ]]
+    },
+    "Send WhatsApp via Evolution API": {
+      "main": [[ { "node": "Log Notification", "type": "main", "index": 0 } ]]
+    },
+    "Log Notification": {
+      "main": [[ { "node": "Respond OK", "type": "main", "index": 0 } ]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
