@@ -1,2 +1,19 @@
 // @copyzen/agents — LLM + Agent implementation (Epic 3)
 export * from './llm/index.js';
+export { Agent } from './base/agent.js';
+export type { AgentConfig } from './base/agent.js';
+export { CMOAgent } from './cmo/cmo-agent.js';
+export type {
+  ProposalOutput,
+  SystemSurvey,
+  ProjectPlan,
+  ProjectPhase,
+  AgentTask,
+  ExecutionSequence,
+  ReviewResult,
+  AgentOutput,
+  AgentExecutionLog,
+  PackageType,
+  SystemType,
+  AgentRole,
+} from './cmo/types.js';

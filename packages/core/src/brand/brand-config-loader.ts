@@ -73,7 +73,7 @@ export class BrandConfigLoader {
         .eq('client_id', clientId)
         .limit(1);
 
-      const intel = Array.isArray(data) ? data[0] : null;
+      const intel = Array.isArray(data) ? (data[0] as Record<string, unknown>) : null;
       if (!intel) return config;
 
       const enriched: BrandConfig = { ...config };
