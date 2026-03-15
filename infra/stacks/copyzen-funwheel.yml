@@ -1,0 +1,37 @@
+version: '3.8'
+
+# CopyZen FunWheel — Docker Swarm Stack
+# Deploy via Portainer UI — NUNCA via GitHub Actions (NFR-15)
+# Domínio: fw.copyzen.com.br → IP 31.97.26.21
+
+services:
+  copyzen-fw:
+    image: nginx:alpine
+    volumes:
+      - /srv/sites/fw.copyzen.com.br:/usr/share/nginx/html:ro
+    networks:
+      - AZ_Net
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.copyzen-fw.rule=Host(`fw.copyzen.com.br`)"
+        - "traefik.http.routers.copyzen-fw.entrypoints=websecure"
+        - "traefik.http.routers.copyzen-fw.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.copyzen-fw-http.rule=Host(`fw.copyzen.com.br`)"
+        - "traefik.http.routers.copyzen-fw-http.entrypoints=web"
+        - "traefik.http.routers.copyzen-fw-http.middlewares=redirect-to-https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.services.copyzen-fw.loadbalancer.server.port=80"
+
+networks:
+  AZ_Net:
+    external: true
