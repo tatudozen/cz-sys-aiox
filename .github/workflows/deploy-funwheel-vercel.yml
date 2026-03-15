@@ -1,0 +1,90 @@
+name: Deploy FunWheel → Vercel (Client)
+
+# Story 5.6 — AC-3, AC-4
+# Workflow dispatch: Fernando triggers per-client FunWheel deploys
+# Preview deploy → share URL with client → approve → production deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      client_slug:
+        description: 'Client slug (e.g., acme-corp)'
+        required: true
+        type: string
+      environment:
+        description: 'Deploy target'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build FunWheel (multi-target)
+        env:
+          CLIENT_SLUG: ${{ inputs.client_slug }}
+          API_BASE_URL: ${{ vars.API_BASE_URL || 'https://api.copyzen.com.br' }}
+        run: npx tsx packages/funwheel/scripts/build.ts --target vercel --client "$CLIENT_SLUG"
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy Preview
+        if: inputs.environment == 'preview'
+        id: deploy-preview
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+        run: |
+          DEPLOY_URL=$(vercel \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_ORG_ID" \
+            --yes \
+            packages/funwheel/dist 2>&1 | tail -1)
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "Preview URL: $DEPLOY_URL"
+
+      - name: Deploy Production
+        if: inputs.environment == 'production'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+        run: |
+          vercel \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_ORG_ID" \
+            --prod \
+            --yes \
+            packages/funwheel/dist
+
+      - name: Summary
+        if: always()
+        env:
+          CLIENT_SLUG: ${{ inputs.client_slug }}
+          PREVIEW_URL: ${{ steps.deploy-preview.outputs.url }}
+          DEPLOY_ENV: ${{ inputs.environment }}
+        run: |
+          echo "## FunWheel Deploy Summary"
+          echo "Client: $CLIENT_SLUG"
+          echo "Environment: $DEPLOY_ENV"
+          if [ -n "$PREVIEW_URL" ]; then
+            echo "Preview URL: $PREVIEW_URL"
+          fi
