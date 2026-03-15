@@ -1,0 +1,76 @@
+{
+  "_comment": "Default demo content. Overwritten by scripts/build.ts at build time.",
+  "client_slug": "copyzen",
+  "title": "CopyZen Pro — Domine o Copywriting que Converte",
+  "description": "Aprenda a escrever textos que vendem, engajam e transformam seu negócio com o método CopyZen.",
+  "brand": {
+    "primary_color": "#7C3AED",
+    "secondary_color": "#4F46E5",
+    "accent_color": "#F59E0B"
+  },
+  "sections": {
+    "hero": {
+      "headline": "Escreva Textos que Vendem — Sem Precisar Ser Escritor",
+      "subheadline": "O método CopyZen ajuda consultores, coaches e infoprodutores a criarem mensagens que atraem clientes certos e fecham mais vendas.",
+      "cta_text": "Quero o Método CopyZen →"
+    },
+    "problem": {
+      "text": "Se você já passou horas criando posts, emails e páginas mas não viu resultado, o problema não é você — é o método.",
+      "pain_points": [
+        "Investe tempo em conteúdo que ninguém lê",
+        "Não sabe como apresentar seu preço sem assustar",
+        "Sente que seu texto soa genérico e sem personalidade",
+        "Copia concorrentes mas não obtém os mesmos resultados"
+      ]
+    },
+    "solution": {
+      "text": "O CopyZen Pro é um sistema completo de copywriting adaptado para o mercado brasileiro.",
+      "value_props": [
+        "Fórmulas prontas para posts, emails e páginas de vendas",
+        "Posicionamento de marca que atrai clientes de qualidade",
+        "Scripts de WhatsApp para fechar vendas sem pressão",
+        "Templates de headline que param o scroll"
+      ]
+    },
+    "benefits": [
+      { "title": "Copy que Converte", "description": "Textos que transformam visitantes em compradores." },
+      { "title": "Posicionamento Claro", "description": "Diferencie-se e atraia seu cliente ideal." },
+      { "title": "Conteúdo Consistente", "description": "30 dias de conteúdo em 2 horas." },
+      { "title": "Scripts de Vendas", "description": "Scripts de WhatsApp que fecham sem pressionar." },
+      { "title": "Análise de Resultados", "description": "Métricas simples para otimizar." },
+      { "title": "Comunidade Ativa", "description": "Feedback em tempo real dos seus textos." }
+    ],
+    "social_proof": [
+      { "quote": "Antes eu ficava travada sem saber o que escrever. Hoje tenho um processo e minhas vendas triplicaram em 60 dias.", "author": "Ana Beatriz", "role": "Coach de Carreira" },
+      { "quote": "O módulo de headlines sozinho valeu o investimento. Minha taxa de abertura foi de 12% para 41%.", "author": "Rodrigo Mendes", "role": "Consultor de Marketing" },
+      { "quote": "Finalmente entendi como falar da minha solução sem ser genérica. Meu DM agora converte muito mais.", "author": "Camila Souza", "role": "Nutricionista" }
+    ],
+    "offer": {
+      "title": "O Que Está Incluído",
+      "items": [
+        "8 módulos com metodologia progressiva",
+        "50+ templates prontos para usar",
+        "Scripts de WhatsApp, email e Instagram",
+        "Aulas ao vivo mensais com feedback",
+        "Comunidade exclusiva de alunos",
+        "Acesso vitalício + atualizações grátis"
+      ],
+      "price_display": "R$ 997"
+    },
+    "guarantee": {
+      "text": "Se em até 30 dias você não estiver satisfeito, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.",
+      "duration": "30 dias"
+    },
+    "faq": [
+      { "question": "Para quem é o CopyZen Pro?", "answer": "Para consultores, coaches, freelancers e infoprodutores que querem vender melhor com as palavras certas." },
+      { "question": "Preciso ter experiência com copywriting?", "answer": "Não. O método foi desenvolvido do zero até especialização." },
+      { "question": "Em quanto tempo vejo resultados?", "answer": "A maioria dos alunos relata os primeiros resultados nas primeiras 2 semanas." },
+      { "question": "E se eu não gostar?", "answer": "Você tem 30 dias de garantia total. Se não ficar satisfeito por qualquer motivo, devolvemos 100%." }
+    ],
+    "final_cta": {
+      "headline": "A Hora de Mudar é Agora",
+      "urgency": "Enquanto você espera, seus concorrentes estão aprendendo a escrever melhor. Não deixe para depois.",
+      "button_text": "Quero o Método CopyZen →"
+    }
+  }
+}
