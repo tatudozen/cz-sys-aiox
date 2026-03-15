@@ -7,6 +7,7 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { CMOAgent } from './cmo/cmo-agent.js';
+import { CopywriterAgent } from './copywriter/copywriter-agent.js';
 import { createLLMProvider } from './llm/factory.js';
 import type { AgentOutput } from './cmo/types.js';
 import type { BrandConfig } from '@copyzen/core';
@@ -138,6 +139,93 @@ app.post('/agents/cmo/analyze-brand-intel', async (req: Request, res: Response) 
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     res.status(500).json({ error: message });
+  }
+});
+
+// --- Copywriter routes (Story 3.4 — AC-8) ---
+
+// POST /agents/copywriter/generate-post
+app.post('/agents/copywriter/generate-post', async (req: Request, res: Response) => {
+  try {
+    const { brief, brand_config, mode, type } = req.body as {
+      brief: string;
+      brand_config: BrandConfig;
+      mode: Parameters<CopywriterAgent['generatePostCopy']>[2];
+      type: Parameters<CopywriterAgent['generatePostCopy']>[3];
+    };
+
+    if (!brief || !brand_config || !mode || !type) {
+      res.status(400).json({ error: 'Missing required fields: brief, brand_config, mode, type' });
+      return;
+    }
+
+    const agent = new CopywriterAgent({ llm: createLLMProvider() });
+    const result = await agent.generatePostCopy(brief, brand_config, mode, type);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// POST /agents/copywriter/generate-landing-page
+app.post('/agents/copywriter/generate-landing-page', async (req: Request, res: Response) => {
+  try {
+    const { brief, brand_config, page_type } = req.body as {
+      brief: string;
+      brand_config: BrandConfig;
+      page_type: Parameters<CopywriterAgent['generateLandingPageCopy']>[2];
+    };
+
+    if (!brief || !brand_config || !page_type) {
+      res.status(400).json({ error: 'Missing required fields: brief, brand_config, page_type' });
+      return;
+    }
+
+    const agent = new CopywriterAgent({ llm: createLLMProvider() });
+    const result = await agent.generateLandingPageCopy(brief, brand_config, page_type);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// POST /agents/copywriter/generate-sales-page
+app.post('/agents/copywriter/generate-sales-page', async (req: Request, res: Response) => {
+  try {
+    const { brief, brand_config } = req.body as { brief: string; brand_config: BrandConfig };
+
+    if (!brief || !brand_config) {
+      res.status(400).json({ error: 'Missing required fields: brief, brand_config' });
+      return;
+    }
+
+    const agent = new CopywriterAgent({ llm: createLLMProvider() });
+    const result = await agent.generateSalesPageCopy(brief, brand_config);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// POST /agents/copywriter/revise
+app.post('/agents/copywriter/revise', async (req: Request, res: Response) => {
+  try {
+    const { original, feedback, brand_config } = req.body as {
+      original: string;
+      feedback: string;
+      brand_config: BrandConfig;
+    };
+
+    if (!original || !feedback || !brand_config) {
+      res.status(400).json({ error: 'Missing required fields: original, feedback, brand_config' });
+      return;
+    }
+
+    const agent = new CopywriterAgent({ llm: createLLMProvider() });
+    const result = await agent.revise(original, feedback, brand_config);
+    res.json({ success: true, data: { revised: result } });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
   }
 });
 
