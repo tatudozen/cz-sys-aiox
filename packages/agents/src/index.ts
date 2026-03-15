@@ -1,3 +1,2 @@
-// @copyzen/agents — placeholder scaffold
-// Implementation: Epic 3 (Stories 3.1–3.6)
-export {};
+// @copyzen/agents — LLM + Agent implementation (Epic 3)
+export * from './llm/index.js';
