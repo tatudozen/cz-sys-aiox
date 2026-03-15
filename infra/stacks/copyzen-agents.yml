@@ -1,0 +1,55 @@
+# CopyZen Agent Server — Docker Swarm Stack
+# Story 3.6 — AC-1
+#
+# Deploy via Portainer UI (NOT GitHub Actions — NFR-15)
+# Network: AZ_Net (internal only, NOT exposed via Traefik)
+# URL for n8n: http://copyzen-agents:3001
+#
+# IMPORTANTE: Este serviço NÃO tem label Traefik — acesso interno apenas
+
+version: '3.8'
+
+services:
+  copyzen-agents:
+    image: registry.yourdomain.com/copyzen-agents:latest
+    # Alternatively, build from source:
+    # build:
+    #   context: ../../
+    #   dockerfile: packages/agents/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - AGENT_PORT=3001
+      - LLM_PROVIDER=claude
+      - CLAUDE_MODEL=claude-sonnet-4-6
+    env_file:
+      - /srv/copyzen/agents.env  # Created manually on server (NOT in git)
+    networks:
+      - AZ_Net
+    ports: []  # No port mapping — internal only via AZ_Net
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/agents/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  AZ_Net:
+    external: true

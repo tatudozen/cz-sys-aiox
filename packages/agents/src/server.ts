@@ -36,11 +36,22 @@ function requireApiKey(req: Request, res: Response, next: NextFunction): void {
 
 app.use('/agents', requireApiKey);
 
-// --- Health check (AC-6) ---
+// --- Health check (AC-4 Story 3.6) ---
 app.get('/agents/health', (_req: Request, res: Response) => {
+  const llmProvider = process.env.LLM_PROVIDER ?? 'claude';
+  const hasApiKey = !!(process.env.CLAUDE_API_KEY);
+
   res.json({
     status: 'ok',
-    agents: ['cmo'],
+    agents: {
+      cmo: 'ready',
+      copywriter: 'ready',
+      designer: 'ready',
+    },
+    llm: {
+      provider: llmProvider,
+      status: hasApiKey ? 'connected' : 'no-api-key',
+    },
     version: '0.1.0',
     timestamp: new Date().toISOString(),
   });
