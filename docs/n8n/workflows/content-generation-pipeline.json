@@ -1,0 +1,208 @@
+{
+  "name": "Content Generation Pipeline — Sistema 1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "content-generation",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "node-1",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 400],
+      "notes": "Input: {client_id, project_plan_id, mode, quantity}"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/brand_configs?client_id=eq.{{$json.client_id}}&select=*",
+        "headers": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" }
+          ]
+        }
+      },
+      "id": "node-2",
+      "name": "Load Brand Config",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://copyzen-agents:3001/agents/cmo/create-project-plan",
+        "headers": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{$env.AGENT_API_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "body": {
+          "mode": "json",
+          "jsonContent": "={\n  \"client_id\": \"{{ $('Trigger').item.json.client_id }}\",\n  \"package\": \"{{ $('Load Brand Config').item.json[0].tone_of_voice === 'technical' ? 'ia' : 'art' }}\",\n  \"system_surveys\": [],\n  \"brand_config\": {{ JSON.stringify($('Load Brand Config').item.json[0]) }}\n}"
+        }
+      },
+      "id": "node-3",
+      "name": "CMO Create Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build post array based on quantity and mode\nconst quantity = $('Trigger').item.json.quantity || 3;\nconst mode = $('Trigger').item.json.mode || 'inception';\nconst topics = [\n  'Transformação de negócio com tecnologia',\n  'Resultados mensuráveis com automação',\n  'Cases de sucesso do mercado',\n  'Tendências de marketing digital',\n  'Como otimizar sua presença digital'\n];\n\nconst posts = [];\nfor (let i = 0; i < quantity; i++) {\n  posts.push({\n    index: i + 1,\n    type: i % 3 === 0 ? 'carousel' : 'image',\n    topic: topics[i % topics.length],\n    mode: mode,\n    cta_target: mode === 'atracao_fatal' ? 'funwheel_url' : null\n  });\n}\n\nreturn posts.map(p => ({json: p}));"
+      },
+      "id": "node-4",
+      "name": "Generate Post List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://copyzen-agents:3001/agents/copywriter/generate-post",
+        "headers": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{$env.AGENT_API_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "body": {
+          "mode": "json",
+          "jsonContent": "={\n  \"brief\": \"Post {{ $json.index }}: {{ $json.topic }}\",\n  \"brand_config\": {{ JSON.stringify($('Load Brand Config').item.json[0]) }},\n  \"mode\": \"{{ $json.mode }}\",\n  \"type\": \"{{ $json.type }}\"\n}"
+        },
+        "options": {
+          "batching": {
+            "batch": { "batchSize": 1 },
+            "options": { "stagger": 1000 }
+          }
+        }
+      },
+      "id": "node-5",
+      "name": "Copywriter Generate Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://copyzen-agents:3001/agents/designer/generate-image-prompt",
+        "headers": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{$env.AGENT_API_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "body": {
+          "mode": "json",
+          "jsonContent": "={\n  \"brief\": \"{{ $('Copywriter Generate Post').item.json.data.headline }}\",\n  \"brand_config\": {{ JSON.stringify($('Load Brand Config').item.json[0]) }},\n  \"format\": \"{{ $('Generate Post List').item.json.type === 'carousel' ? 'carousel_slide' : 'post' }}\"\n}"
+        }
+      },
+      "id": "node-6",
+      "name": "Designer Image Prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Image API stub — Story 4.3 will implement actual image generation\n// For now, save image_url as null (prompt is ready for manual use or future automation)\nconst imagePrompt = $('Designer Image Prompt').item.json.data.prompt;\nreturn [{\n  json: {\n    image_url: null,  // Story 4.3: call Nano Banana or Kling AI here\n    image_prompt: imagePrompt,\n    status: 'prompt_ready'\n  }\n}];"
+      },
+      "id": "node-7",
+      "name": "Image API (stub)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300],
+      "notes": "Story 4.3: Replace with actual Nano Banana / Kling AI API call"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/content_outputs",
+        "headers": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "body": {
+          "mode": "json",
+          "jsonContent": "={\n  \"project_plan_id\": \"{{ $('Trigger').item.json.project_plan_id }}\",\n  \"client_id\": \"{{ $('Trigger').item.json.client_id }}\",\n  \"post_index\": {{ $('Generate Post List').item.json.index }},\n  \"type\": \"{{ $('Generate Post List').item.json.type }}\",\n  \"mode\": \"{{ $('Generate Post List').item.json.mode }}\",\n  \"copy\": {{ JSON.stringify($('Copywriter Generate Post').item.json.data) }},\n  \"image_prompt\": \"{{ $('Image API (stub)').item.json.image_prompt }}\",\n  \"image_url\": null,\n  \"status\": \"draft\"\n}"
+        }
+      },
+      "id": "node-8",
+      "name": "Save to content_outputs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all results\nconst allItems = $input.all();\nreturn [{\n  json: {\n    pipeline_complete: true,\n    posts_generated: allItems.length,\n    client_id: $('Trigger').first().json.client_id,\n    project_plan_id: $('Trigger').first().json.project_plan_id,\n    status: 'draft'\n  }\n}];"
+      },
+      "id": "node-9",
+      "name": "Package Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "node-10",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2220, 400]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [[{ "node": "Load Brand Config", "type": "main", "index": 0 }]]
+    },
+    "Load Brand Config": {
+      "main": [[{ "node": "CMO Create Plan", "type": "main", "index": 0 }]]
+    },
+    "CMO Create Plan": {
+      "main": [[{ "node": "Generate Post List", "type": "main", "index": 0 }]]
+    },
+    "Generate Post List": {
+      "main": [[{ "node": "Copywriter Generate Post", "type": "main", "index": 0 }]]
+    },
+    "Copywriter Generate Post": {
+      "main": [[{ "node": "Designer Image Prompt", "type": "main", "index": 0 }]]
+    },
+    "Designer Image Prompt": {
+      "main": [[{ "node": "Image API (stub)", "type": "main", "index": 0 }]]
+    },
+    "Image API (stub)": {
+      "main": [[{ "node": "Save to content_outputs", "type": "main", "index": 0 }]]
+    },
+    "Save to content_outputs": {
+      "main": [[{ "node": "Package Results", "type": "main", "index": 0 }]]
+    },
+    "Package Results": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": ""
+  },
+  "meta": {
+    "templateId": "copyzen-content-generation-pipeline",
+    "description": "Sistema 1: Load brand → CMO plan → Copywriter copy → Designer prompt → Image (stub) → Save to content_outputs",
+    "story": "4.1"
+  }
+}
