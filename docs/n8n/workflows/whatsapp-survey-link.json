@@ -1,0 +1,218 @@
+{
+  "name": "whatsapp-survey-link",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-evolution",
+      "name": "Webhook: Evolution API Inbound",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "whatsapp-inbound"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "is-text",
+              "leftValue": "={{ $json.body.data?.messageType }}",
+              "rightValue": "conversation",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-text-message",
+      "name": "Filter: Text Messages Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body;\nconst phone = body.data?.key?.remoteJid?.replace('@s.whatsapp.net', '') || '';\nconst messageText = body.data?.message?.conversation || '';\nconst instanceName = body.instance || 'default';\n\nreturn [{\n  json: {\n    phone,\n    messageText,\n    instanceName,\n    messageReceived: messageText,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "extract-data",
+      "name": "Code: Extract Phone + Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $env.EVOLUTION_API_HOST }}/message/sendText/{{ $json.instanceName }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone }}\",\n  \"text\": \"Olá! 👋 Sou o assistente da *CopyZen*!\\n\\nA CopyZen é uma plataforma de marketing inteligente que usa IA para criar conteúdo e estratégias personalizadas para o seu negócio.\\n\\nPara começarmos, preciso entender melhor sobre você. Preencha nosso briefing inicial aqui:\\n\\n👉 {{ $env.GHL_SURVEY_URL }}\\n\\nSão apenas alguns minutos e já poderemos montar uma proposta sob medida para você! 🚀\"\n}",
+        "options": {}
+      },
+      "id": "send-whatsapp-reply",
+      "name": "HTTP: Send WhatsApp Survey Link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/whatsapp_interactions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $('Code: Extract Phone + Message').item.json.phone }}\",\n  \"direction\": \"inbound\",\n  \"message_type\": \"text\",\n  \"content\": {{ JSON.stringify($('Code: Extract Phone + Message').item.json.messageText) }},\n  \"raw_data\": {{ JSON.stringify($('Webhook: Evolution API Inbound').item.json.body) }}\n}",
+        "options": {}
+      },
+      "id": "log-inbound",
+      "name": "Supabase: Log Inbound Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 220],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/whatsapp_interactions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $('Code: Extract Phone + Message').item.json.phone }}\",\n  \"direction\": \"outbound\",\n  \"message_type\": \"text\",\n  \"content\": \"Survey link sent\",\n  \"raw_data\": {}\n}",
+        "options": {}
+      },
+      "id": "log-outbound",
+      "name": "Supabase: Log Outbound Survey Link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 220],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\": true}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-ok",
+      "name": "Response: 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1560, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\": true, \"skipped\": \"non-text message\"}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-skip",
+      "name": "Response: 200 Skip",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 400]
+    }
+  ],
+  "connections": {
+    "Webhook: Evolution API Inbound": {
+      "main": [[{"node": "Filter: Text Messages Only", "type": "main", "index": 0}]]
+    },
+    "Filter: Text Messages Only": {
+      "main": [
+        [{"node": "Code: Extract Phone + Message", "type": "main", "index": 0}],
+        [{"node": "Response: 200 Skip", "type": "main", "index": 0}]
+      ]
+    },
+    "Code: Extract Phone + Message": {
+      "main": [[{"node": "HTTP: Send WhatsApp Survey Link", "type": "main", "index": 0}]]
+    },
+    "HTTP: Send WhatsApp Survey Link": {
+      "main": [[{"node": "Supabase: Log Inbound Message", "type": "main", "index": 0}]]
+    },
+    "Supabase: Log Inbound Message": {
+      "main": [[{"node": "Supabase: Log Outbound Survey Link", "type": "main", "index": 0}]]
+    },
+    "Supabase: Log Outbound Survey Link": {
+      "main": [[{"node": "Response: 200 OK", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "description": "Evolution API inbound WhatsApp webhook. Replies with CopyZen intro + GHL survey link. Logs interaction to Supabase. Story 2.2.",
+    "envVars": ["EVOLUTION_API_HOST", "EVOLUTION_API_KEY", "GHL_SURVEY_URL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+  },
+  "tags": [{"name": "sistema-0"}, {"name": "whatsapp"}]
+}
