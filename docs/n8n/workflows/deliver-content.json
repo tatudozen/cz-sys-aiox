@@ -1,0 +1,257 @@
+{
+  "name": "CopyZen — Deliver Content to Google Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deliver-content",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook — Delivery Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "notes": "POST body: { project_plan_id, client_id, client_name, client_email, content_outputs: [{post_id, copy_text, hashtags, image_url}] }"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create delivery manifest from webhook payload\nconst { project_plan_id, client_id, client_name, client_email, content_outputs } = $input.first().json;\n\nconst date = new Date().toISOString().substring(0, 10); // YYYY-MM-DD\n\nreturn [{\n  json: {\n    project_plan_id,\n    client_id,\n    client_name,\n    client_email,\n    content_outputs,\n    date,\n    root_folder_name: 'CopyZen',\n    client_folder_name: client_name,\n    date_folder_name: date,\n    files_count: content_outputs.length * 2, // image + text per post\n  }\n}];"
+      },
+      "id": "node-prepare",
+      "name": "Prepare Delivery Manifest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://agents:3001/agents/drive/create-folder",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "parent_id", "value": "={{ $env.GOOGLE_DRIVE_ROOT_FOLDER_ID }}" },
+            { "name": "name", "value": "={{ $json.client_folder_name }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-create-client-folder",
+      "name": "Create Client Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "notes": "Creates CopyZen/{client_name}/ folder"
+    },
+    {
+      "parameters": {
+        "url": "http://agents:3001/agents/drive/create-folder",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "parent_id", "value": "={{ $('Create Client Folder').first().json.folder_id }}" },
+            { "name": "name", "value": "={{ $('Prepare Delivery Manifest').first().json.date_folder_name }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-create-date-folder",
+      "name": "Create Date Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300],
+      "notes": "Creates CopyZen/{client_name}/{YYYY-MM-DD}/ folder"
+    },
+    {
+      "parameters": {
+        "url": "http://agents:3001/agents/drive/create-folder",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "parent_id", "value": "={{ $('Create Date Folder').first().json.folder_id }}" },
+            { "name": "name", "value": "carrosseis" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-create-carrosseis",
+      "name": "Create Carrosseis Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 200],
+      "notes": "Creates .../carrosseis/ subfolder"
+    },
+    {
+      "parameters": {
+        "url": "http://agents:3001/agents/drive/create-folder",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "parent_id", "value": "={{ $('Create Date Folder').first().json.folder_id }}" },
+            { "name": "name", "value": "imagens" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-create-imagens",
+      "name": "Create Imagens Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 400],
+      "notes": "Creates .../imagens/ subfolder"
+    },
+    {
+      "parameters": {
+        "url": "http://agents:3001/agents/drive/upload-content-package",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "carrosseis_folder_id", "value": "={{ $('Create Carrosseis Folder').first().json.folder_id }}" },
+            { "name": "imagens_folder_id", "value": "={{ $('Create Imagens Folder').first().json.folder_id }}" },
+            { "name": "content_outputs", "value": "={{ $('Prepare Delivery Manifest').first().json.content_outputs }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-upload-assets",
+      "name": "Upload Content Assets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 300],
+      "notes": "Uploads images + text files for each post. Returns uploaded_files array."
+    },
+    {
+      "parameters": {
+        "url": "http://agents:3001/agents/drive/share",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "folder_id", "value": "={{ $('Create Date Folder').first().json.folder_id }}" },
+            { "name": "email", "value": "={{ $('Prepare Delivery Manifest').first().json.client_email }}" },
+            { "name": "role", "value": "reader" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-share",
+      "name": "Share Folder with Client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300],
+      "notes": "Shares date folder with client email as reader"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "deliveries",
+        "columns": "project_plan_id, client_id, drive_folder_url, files_count, delivered_at",
+        "additionalFields": {}
+      },
+      "id": "node-supabase-record",
+      "name": "Record Delivery in Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1780, 300],
+      "notes": "Inserts delivery record. drive_folder_url from date folder webViewLink."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, delivery_id: $('Record Delivery in Supabase').first().json.id, drive_folder_url: $('Create Date Folder').first().json.folder_url, files_count: $('Prepare Delivery Manifest').first().json.files_count, client_email: $('Prepare Delivery Manifest').first().json.client_email }) }}"
+      },
+      "id": "node-respond",
+      "name": "Respond with Delivery Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2000, 300]
+    }
+  ],
+  "connections": {
+    "Webhook — Delivery Trigger": {
+      "main": [[{ "node": "Prepare Delivery Manifest", "type": "main", "index": 0 }]]
+    },
+    "Prepare Delivery Manifest": {
+      "main": [[{ "node": "Create Client Folder", "type": "main", "index": 0 }]]
+    },
+    "Create Client Folder": {
+      "main": [[{ "node": "Create Date Folder", "type": "main", "index": 0 }]]
+    },
+    "Create Date Folder": {
+      "main": [
+        [
+          { "node": "Create Carrosseis Folder", "type": "main", "index": 0 },
+          { "node": "Create Imagens Folder", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Carrosseis Folder": {
+      "main": [[{ "node": "Upload Content Assets", "type": "main", "index": 0 }]]
+    },
+    "Create Imagens Folder": {
+      "main": [[{ "node": "Upload Content Assets", "type": "main", "index": 0 }]]
+    },
+    "Upload Content Assets": {
+      "main": [[{ "node": "Share Folder with Client", "type": "main", "index": 0 }]]
+    },
+    "Share Folder with Client": {
+      "main": [[{ "node": "Record Delivery in Supabase", "type": "main", "index": 0 }]]
+    },
+    "Record Delivery in Supabase": {
+      "main": [[{ "node": "Respond with Delivery Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["copyzen", "delivery", "google-drive", "epic-4"],
+  "pinData": {},
+  "versionId": "4.4.0",
+  "meta": {
+    "instanceId": "copyzen-local"
+  }
+}
