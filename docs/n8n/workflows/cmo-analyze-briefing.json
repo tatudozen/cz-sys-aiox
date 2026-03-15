@@ -1,0 +1,158 @@
+{
+  "name": "cmo-analyze-briefing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cmo-analyze-briefing",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: New Briefing",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "cmo-analyze-briefing",
+      "notes": "Called by briefing-intake workflow when status=received"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings?id=eq.{{ $json.body.briefing_id }}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-briefing",
+      "name": "Supabase: Fetch Briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const briefing = $input.item.json[0];\nif (!briefing) throw new Error('Briefing not found: ' + $('Webhook: New Briefing').item.json.body.briefing_id);\n\nconst raw = briefing.raw_data;\nconst hasRequired = raw.nome_negocio && raw.segmento && raw.publico_alvo && raw.objetivo_principal && raw.canal_comunicacao;\n\nreturn [{\n  json: {\n    briefing_id: briefing.id,\n    client_id: briefing.client_id,\n    raw_data: raw,\n    has_required_fields: !!hasRequired\n  }\n}];"
+      },
+      "id": "extract-briefing",
+      "name": "Code: Extract Briefing Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "x-api-key", "value": "={{ $env.CLAUDE_API_KEY }}"},
+            {"name": "anthropic-version", "value": "2023-06-01"},
+            {"name": "content-type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $env.CLAUDE_MODEL || 'claude-sonnet-4-6' }}\",\n  \"max_tokens\": 1024,\n  \"system\": \"Você é o CMO (Chief Marketing Officer) da CopyZen. Analise briefings e recomende o melhor pacote. Pacotes: ia, art, e, combo_leads, combo_cash. Responda sempre em JSON válido. Responda em português do Brasil.\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Analise o briefing e retorne JSON:\\n\\nNome: {{ $json.raw_data.nome_negocio }}\\nSegmento: {{ $json.raw_data.segmento }}\\nPúblico: {{ $json.raw_data.publico_alvo }}\\nObjetivo: {{ $json.raw_data.objetivo_principal }}\\nOrçamento: {{ $json.raw_data.orcamento_estimado || 'Não informado' }}\\nCanal: {{ $json.raw_data.canal_comunicacao }}\\n\\nRetorne: {\\\"recommended_package\\\": \\\"ia|art|e|combo_leads|combo_cash\\\", \\\"reasoning\\\": \\\"...\\\", \\\"estimated_timeline\\\": \\\"...\\\", \\\"estimated_cost_range\\\": \\\"...\\\", \\\"priority_systems\\\": [], \\\"confidence\\\": 0.0-1.0, \\\"needs_more_info\\\": false, \\\"missing_info\\\": []}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-api",
+      "name": "HTTP: Claude API Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst content = response.content?.[0]?.text || '{}';\nlet analysis;\ntry {\n  // Extract JSON from response (may be wrapped in markdown)\n  const jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\n  analysis = JSON.parse(jsonMatch ? jsonMatch[0] : content);\n} catch (e) {\n  analysis = { recommended_package: 'ia', reasoning: 'Parse error: ' + e.message, confidence: 0, needs_more_info: true };\n}\n\nreturn [{ json: { analysis, raw_response: content } }];"
+      },
+      "id": "parse-analysis",
+      "name": "Code: Parse CMO Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=representation"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"briefing_id\": \"{{ $('Code: Extract Briefing Data').item.json.briefing_id }}\",\n  \"client_id\": \"{{ $('Code: Extract Briefing Data').item.json.client_id }}\",\n  \"package\": \"{{ $json.analysis.recommended_package }}\",\n  \"reasoning\": {{ JSON.stringify($json.analysis.reasoning) }},\n  \"timeline\": {{ JSON.stringify($json.analysis.estimated_timeline) }},\n  \"cost_range\": {{ JSON.stringify($json.analysis.estimated_cost_range) }},\n  \"status\": \"{{ $json.analysis.needs_more_info ? 'draft' : 'draft' }}\"\n}",
+        "options": {}
+      },
+      "id": "save-proposal",
+      "name": "Supabase: Save Proposal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings?id=eq.{{ $('Code: Extract Briefing Data').item.json.briefing_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=minimal"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\": \"{{ $('Code: Parse CMO Analysis').item.json.analysis.needs_more_info ? 'needs_info' : 'analyzed' }}\"}",
+        "options": {}
+      },
+      "id": "update-briefing-status",
+      "name": "Supabase: Update Briefing Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"proposal_id\": \"{{ $('Supabase: Save Proposal').item.json[0].id }}\",\n  \"recommended_package\": \"{{ $('Code: Parse CMO Analysis').item.json.analysis.recommended_package }}\"\n}",
+        "options": {"responseCode": 200}
+      },
+      "id": "respond-success",
+      "name": "Response: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1780, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: New Briefing": {"main": [[{"node": "Supabase: Fetch Briefing", "type": "main", "index": 0}]]},
+    "Supabase: Fetch Briefing": {"main": [[{"node": "Code: Extract Briefing Data", "type": "main", "index": 0}]]},
+    "Code: Extract Briefing Data": {"main": [[{"node": "HTTP: Claude API Analysis", "type": "main", "index": 0}]]},
+    "HTTP: Claude API Analysis": {"main": [[{"node": "Code: Parse CMO Analysis", "type": "main", "index": 0}]]},
+    "Code: Parse CMO Analysis": {"main": [[{"node": "Supabase: Save Proposal", "type": "main", "index": 0}]]},
+    "Supabase: Save Proposal": {"main": [[{"node": "Supabase: Update Briefing Status", "type": "main", "index": 0}]]},
+    "Supabase: Update Briefing Status": {"main": [[{"node": "Response: Success", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder": "v1", "saveManualExecutions": true},
+  "meta": {
+    "description": "CMO agent analyzes briefing via Claude API and saves package recommendation to proposals table. Story 2.3.",
+    "envVars": ["CLAUDE_API_KEY", "CLAUDE_MODEL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+  },
+  "tags": [{"name": "sistema-0"}, {"name": "cmo"}, {"name": "claude-api"}]
+}
