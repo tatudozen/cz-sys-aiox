@@ -1,3 +1,3 @@
-// @copyzen/integrations — placeholder scaffold
-// Implementation: Epic 2 (GoHighLevel, Evolution API, Supabase, Google Drive)
-export {};
+// @copyzen/integrations — external service integrations
+export { GoogleDriveClient } from './google-drive/google-drive-client.js';
+export type { DriveFile, GoogleDriveConfig } from './google-drive/google-drive-client.js';

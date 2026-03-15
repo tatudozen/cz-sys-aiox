@@ -8,6 +8,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { CMOAgent } from './cmo/cmo-agent.js';
 import { CopywriterAgent } from './copywriter/copywriter-agent.js';
+import { DesignerAgent } from './designer/designer-agent.js';
 import { createLLMProvider } from './llm/factory.js';
 import type { AgentOutput } from './cmo/types.js';
 import type { BrandConfig } from '@copyzen/core';
@@ -224,6 +225,60 @@ app.post('/agents/copywriter/revise', async (req: Request, res: Response) => {
     const agent = new CopywriterAgent({ llm: createLLMProvider() });
     const result = await agent.revise(original, feedback, brand_config);
     res.json({ success: true, data: { revised: result } });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// --- Designer routes (Story 3.5 — AC-6) ---
+
+// POST /agents/designer/generate-image-prompt
+app.post('/agents/designer/generate-image-prompt', async (req: Request, res: Response) => {
+  try {
+    const { brief, brand_config, format } = req.body as {
+      brief: string;
+      brand_config: BrandConfig;
+      format: Parameters<DesignerAgent['generateImagePrompt']>[2];
+    };
+    if (!brief || !brand_config || !format) {
+      res.status(400).json({ error: 'Missing required fields: brief, brand_config, format' });
+      return;
+    }
+    const agent = new DesignerAgent({ llm: createLLMProvider() });
+    const result = await agent.generateImagePrompt(brief, brand_config, format);
+    res.json({ success: true, data: { prompt: result } });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// POST /agents/designer/apply-brand-theme
+app.post('/agents/designer/apply-brand-theme', async (req: Request, res: Response) => {
+  try {
+    const { brand_config } = req.body as { brand_config: BrandConfig };
+    if (!brand_config) {
+      res.status(400).json({ error: 'Missing required field: brand_config' });
+      return;
+    }
+    const agent = new DesignerAgent({ llm: createLLMProvider() });
+    const result = await agent.applyBrandTheme(brand_config);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// POST /agents/designer/select-template
+app.post('/agents/designer/select-template', async (req: Request, res: Response) => {
+  try {
+    const { page_type, brand_config } = req.body as { page_type: string; brand_config: BrandConfig };
+    if (!page_type || !brand_config) {
+      res.status(400).json({ error: 'Missing required fields: page_type, brand_config' });
+      return;
+    }
+    const agent = new DesignerAgent({ llm: createLLMProvider() });
+    const result = await agent.selectTemplate(page_type, brand_config);
+    res.json({ success: true, data: { template: result } });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
   }
