@@ -1,0 +1,112 @@
+---
+/** Hero section — Sales Page. Story 6.1 AC-2 */
+interface Props {
+  headline: string;
+  subheadline?: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  secondaryCtaText?: string;
+  secondaryCtaUrl?: string;
+  badgeText?: string;
+}
+const {
+  headline,
+  subheadline,
+  ctaText = 'Quero Acesso Agora →',
+  ctaUrl = '#oferta',
+  secondaryCtaText,
+  secondaryCtaUrl,
+  badgeText,
+} = Astro.props;
+---
+
+<section class="sp-hero" aria-label="Oferta principal">
+  <div class="sp-container">
+    {badgeText && (
+      <div class="sp-badge" role="status">{badgeText}</div>
+    )}
+    <h1 class="sp-hero__headline">{headline}</h1>
+    {subheadline && <p class="sp-hero__sub">{subheadline}</p>}
+
+    <div class="sp-hero__ctas">
+      <a href={ctaUrl} class="sp-btn sp-btn--primary">{ctaText}</a>
+      {secondaryCtaText && secondaryCtaUrl && (
+        <a href={secondaryCtaUrl} class="sp-btn sp-btn--ghost">{secondaryCtaText}</a>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .sp-hero {
+    background: var(--sp-gradient);
+    color: #fff;
+    padding: 80px 0 72px;
+    text-align: center;
+  }
+  .sp-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .sp-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 9999px;
+    padding: 6px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+  .sp-hero__headline {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  .sp-hero__sub {
+    font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+    opacity: 0.9;
+    margin-bottom: 36px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .sp-hero__ctas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  @media (min-width: 480px) {
+    .sp-hero__ctas { flex-direction: row; justify-content: center; }
+  }
+  .sp-btn {
+    display: inline-block;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-family: var(--sp-heading-font);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    width: 100%;
+    text-align: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  @media (min-width: 480px) { .sp-btn { width: auto; } }
+  .sp-btn--primary {
+    background: #fff;
+    color: var(--sp-primary);
+  }
+  .sp-btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .sp-btn--ghost {
+    background: transparent;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.6);
+  }
+  .sp-btn--ghost:hover { background: rgba(255,255,255,0.1); }
+</style>

@@ -1,0 +1,75 @@
+---
+/** Problem section — agita a dor do público. Story 6.1 AC-2 */
+interface PainPoint { icon?: string; text: string; }
+interface Props {
+  title?: string;
+  body?: string;
+  painPoints?: PainPoint[];
+}
+const {
+  title = 'Você Reconhece Esse Cenário?',
+  body,
+  painPoints = [],
+} = Astro.props;
+---
+
+<section class="sp-problem" aria-label="Problema">
+  <div class="sp-container">
+    <h2 class="sp-section-title">{title}</h2>
+    {body && <p class="sp-section-body">{body}</p>}
+
+    {painPoints.length > 0 && (
+      <ul class="sp-pain-list" role="list">
+        {painPoints.map(p => (
+          <li class="sp-pain-item">
+            <span class="sp-pain-icon" aria-hidden="true">{p.icon ?? '❌'}</span>
+            <span>{p.text}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  .sp-problem {
+    background: #fef2f2;
+    padding: 72px 0;
+    text-align: center;
+  }
+  .sp-container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+  .sp-section-title {
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    color: var(--sp-primary);
+    margin-bottom: 16px;
+  }
+  .sp-section-body {
+    font-size: 1.05rem;
+    opacity: 0.8;
+    margin-bottom: 32px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .sp-pain-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .sp-pain-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 1rem;
+  }
+  .sp-pain-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+</style>

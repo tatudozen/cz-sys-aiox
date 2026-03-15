@@ -1,0 +1,86 @@
+---
+/** FAQ section — CSS-only accordion via <details>. Story 6.1 AC-2 */
+interface FaqItem { question: string; answer: string; }
+interface Props {
+  title?: string;
+  items?: FaqItem[];
+}
+const {
+  title = 'Perguntas Frequentes',
+  items = [],
+} = Astro.props;
+---
+
+<section class="sp-faq" aria-label="Perguntas Frequentes">
+  <div class="sp-container">
+    <h2 class="sp-section-title">{title}</h2>
+
+    {items.length > 0 ? (
+      <div class="sp-faq-list">
+        {items.map(item => (
+          <details class="sp-faq-item">
+            <summary class="sp-faq-question">
+              {item.question}
+              <span class="sp-faq-icon" aria-hidden="true">+</span>
+            </summary>
+            <p class="sp-faq-answer">{item.answer}</p>
+          </details>
+        ))}
+      </div>
+    ) : (
+      <p class="sp-faq-empty">Nenhuma pergunta frequente cadastrada.</p>
+    )}
+  </div>
+</section>
+
+<style>
+  .sp-faq { background: #f8fafc; padding: 80px 0; }
+  .sp-container { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+  .sp-section-title {
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    color: var(--sp-primary);
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .sp-faq-list { display: flex; flex-direction: column; gap: 12px; }
+  .sp-faq-item {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .sp-faq-item[open] { border-color: var(--sp-secondary); }
+  .sp-faq-question {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--sp-primary);
+    user-select: none;
+    gap: 16px;
+  }
+  .sp-faq-question::-webkit-details-marker { display: none; }
+  .sp-faq-icon {
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: var(--sp-secondary);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .sp-faq-item[open] .sp-faq-icon { transform: rotate(45deg); }
+  .sp-faq-answer {
+    padding: 0 22px 18px;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #475569;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 14px;
+  }
+  .sp-faq-empty { text-align: center; opacity: 0.6; }
+</style>

@@ -1,0 +1,73 @@
+---
+/** FinalCTA section — urgência + botão final. Story 6.1 AC-2, AC-4 */
+interface Props {
+  title?: string;
+  urgencyText?: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  subText?: string;
+}
+const {
+  title = 'Não Deixe para Amanhã',
+  urgencyText,
+  ctaText = 'Quero Acesso Agora →',
+  ctaUrl = '#oferta',
+  subText = 'Vagas limitadas. Garantia de 7 dias.',
+} = Astro.props;
+---
+
+<section class="sp-final-cta" aria-label="Ação final">
+  <div class="sp-container">
+    <h2 class="sp-final-title">{title}</h2>
+    {urgencyText && (
+      <p class="sp-urgency">{urgencyText}</p>
+    )}
+    <a href={ctaUrl} class="sp-final-btn">{ctaText}</a>
+    {subText && <p class="sp-sub-text">{subText}</p>}
+  </div>
+</section>
+
+<style>
+  .sp-final-cta {
+    background: var(--sp-gradient);
+    color: #fff;
+    padding: 80px 0;
+    text-align: center;
+  }
+  .sp-container { max-width: 680px; margin: 0 auto; padding: 0 20px; }
+  .sp-final-title {
+    font-size: clamp(1.75rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+  .sp-urgency {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 36px;
+  }
+  .sp-final-btn {
+    display: inline-block;
+    padding: 20px 48px;
+    background: #fff;
+    color: var(--sp-primary);
+    font-family: var(--sp-heading-font);
+    font-weight: 800;
+    font-size: 1.2rem;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    width: 100%;
+    text-align: center;
+    max-width: 480px;
+  }
+  @media (min-width: 480px) { .sp-final-btn { width: auto; } }
+  .sp-final-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  .sp-sub-text {
+    margin-top: 18px;
+    font-size: 0.9rem;
+    opacity: 0.75;
+  }
+</style>

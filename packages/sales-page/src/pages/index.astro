@@ -1,20 +1,109 @@
 ---
-import '../styles/global.css';
+/**
+ * CopyZen Sales Page Demo
+ * Story 6.1 — Sample page using the sales-page template
+ */
+import SalesPage from '../templates/sales-page.astro';
 ---
 
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sales Page - CopyZen" />
-    <title>Sales Page — CopyZen</title>
-  </head>
-  <body class="bg-white text-gray-900 min-h-screen">
-    <main class="container mx-auto px-4 py-16">
-      <h1 class="text-5xl font-bold tracking-tight">Página de Vendas</h1>
-      <p class="mt-4 text-xl text-gray-600">CopyZen Sales Page Engine — em breve</p>
-      <p class="mt-2 text-sm text-gray-400">Epic 6 — Geração de Páginas de Vendas</p>
-    </main>
-  </body>
-</html>
+<SalesPage
+  title="CopyZen Pro — Domine o Copywriting que Converte"
+  description="Aprenda a escrever textos que vendem, engajam e transformam seu negócio com o método CopyZen."
+  heroHeadline="Escreva Textos que Vendem — Sem Precisar Ser Escritor"
+  heroSubheadline="O método CopyZen ajuda consultores, coaches e infoprodutores a criarem mensagens que atraem clientes certos e fecham mais vendas."
+  heroBadge="Mais de 500 alunos transformados"
+  primaryCtaText="Quero o Método CopyZen →"
+  primaryCtaUrl="#oferta"
+  problemTitle="Você Escreve Muito, Mas Vende Pouco?"
+  problemBody="Se você já passou horas criando posts, emails e páginas mas não viu resultado, o problema não é você — é o método."
+  painPoints={[
+    { text: 'Investe tempo em conteúdo que ninguém lê' },
+    { text: 'Não sabe como apresentar seu preço sem assustar' },
+    { text: 'Sente que seu texto soa genérico e sem personalidade' },
+    { text: 'Copia concorrentes mas não obtém os mesmos resultados' },
+  ]}
+  solutionTitle="O Método que Transforma Palavras em Vendas"
+  solutionBody="O CopyZen Pro é um sistema completo de copywriting adaptado para o mercado brasileiro."
+  solutionHighlights={[
+    'Fórmulas prontas para posts, emails e páginas de vendas',
+    'Posicionamento de marca que atrai clientes de qualidade',
+    'Scripts de WhatsApp para fechar vendas sem pressão',
+    'Templates de headline que param o scroll',
+  ]}
+  benefitsTitle="O que você vai conquistar"
+  benefits={[
+    { icon: '✍️', title: 'Copy que Converte', description: 'Textos que transformam visitantes em compradores.' },
+    { icon: '🎯', title: 'Posicionamento Claro', description: 'Diferencie-se e atraia seu cliente ideal.' },
+    { icon: '📱', title: 'Conteúdo Consistente', description: '30 dias de conteúdo em 2 horas.' },
+    { icon: '💬', title: 'Scripts de Vendas', description: 'Scripts de WhatsApp que fecham sem pressionar.' },
+    { icon: '📊', title: 'Análise de Resultados', description: 'Métricas simples para otimizar.' },
+    { icon: '🚀', title: 'Comunidade Ativa', description: 'Feedback em tempo real dos seus textos.' },
+  ]}
+  proofTitle="Resultados de Quem Aplicou o Método"
+  stats={[
+    { value: '500+', label: 'alunos formados' },
+    { value: '3x', label: 'aumento médio em vendas' },
+    { value: '97%', label: 'de satisfação' },
+  ]}
+  testimonials={[
+    {
+      name: 'Ana Beatriz',
+      role: 'Coach de Carreira',
+      text: 'Antes eu ficava travada sem saber o que escrever. Hoje tenho um processo e minhas vendas triplicaram em 60 dias.',
+      rating: 5,
+    },
+    {
+      name: 'Rodrigo Mendes',
+      role: 'Consultor de Marketing',
+      text: 'O módulo de headlines sozinho valeu o investimento. Minha taxa de abertura foi de 12% para 41%.',
+      rating: 5,
+    },
+    {
+      name: 'Camila Souza',
+      role: 'Nutricionista',
+      text: 'Finalmente entendi como falar da minha solução sem ser genérica. Meu DM agora converte muito mais.',
+      rating: 5,
+    },
+  ]}
+  offerTitle="O Que Está Incluído"
+  price="R$ 997"
+  priceOriginal="R$ 1.997"
+  pricePeriod="pagamento único ou 12x R$ 97"
+  offerItems={[
+    { icon: '🎓', text: '8 módulos com metodologia progressiva' },
+    { icon: '📋', text: '50+ templates prontos para usar' },
+    { icon: '💬', text: 'Scripts de WhatsApp, email e Instagram' },
+    { icon: '🔴', text: 'Aulas ao vivo mensais com feedback' },
+    { icon: '👥', text: 'Comunidade exclusiva de alunos' },
+    { icon: '♾️', text: 'Acesso vitalício + atualizações grátis' },
+  ]}
+  offerBadge="Oferta encerra em breve"
+  offerCtaText="Garantir Minha Vaga →"
+  offerCtaUrl="#"
+  guaranteeTitle="30 Dias de Garantia Total"
+  guaranteeBody="Se em até 30 dias você não estiver satisfeito, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia."
+  guaranteeDays={30}
+  finalCtaTitle="A Hora de Mudar é Agora"
+  finalCtaUrgency="Enquanto você espera, seus concorrentes estão aprendendo a escrever melhor. Não deixe para depois."
+  finalCtaText="Quero o Método CopyZen →"
+  finalCtaUrl="#"
+  finalCtaSubText="Pagamento 100% seguro · Garantia de 30 dias · Acesso imediato"
+  faqItems={[
+    {
+      question: 'Para quem é o CopyZen Pro?',
+      answer: 'Para consultores, coaches, freelancers e infoprodutores que querem vender melhor com as palavras certas.',
+    },
+    {
+      question: 'Preciso ter experiência com copywriting?',
+      answer: 'Não. O método foi desenvolvido do zero até especialização.',
+    },
+    {
+      question: 'Em quanto tempo vejo resultados?',
+      answer: 'A maioria dos alunos relata os primeiros resultados nas primeiras 2 semanas.',
+    },
+    {
+      question: 'E se eu não gostar?',
+      answer: 'Você tem 30 dias de garantia total. Se não ficar satisfeito por qualquer motivo, devolvemos 100%.',
+    },
+  ]}
+/>

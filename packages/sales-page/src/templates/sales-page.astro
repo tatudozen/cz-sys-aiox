@@ -1,0 +1,216 @@
+---
+/**
+ * Sales Page Template
+ * Story 6.1 — AC-1: All 9 conversion sections in order
+ *
+ * Sections: Hero → Problem → Solution → Benefits → SocialProof
+ *           → Offer → Guarantee → FinalCTA → FAQ
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/sales/Hero.astro';
+import Problem from '../components/sales/Problem.astro';
+import Solution from '../components/sales/Solution.astro';
+import Benefits from '../components/sales/Benefits.astro';
+import SocialProof from '../components/sales/SocialProof.astro';
+import Offer from '../components/sales/Offer.astro';
+import Guarantee from '../components/sales/Guarantee.astro';
+import FinalCTA from '../components/sales/FinalCTA.astro';
+import FAQ from '../components/sales/FAQ.astro';
+import type { SalesPageBrand } from '../lib/theme';
+
+export interface PainPoint { icon?: string; text: string; }
+export interface Benefit { icon?: string; title: string; description: string; }
+export interface Testimonial { name: string; role?: string; text: string; avatar?: string; rating?: number; }
+export interface OfferItem { icon?: string; text: string; }
+export interface FaqItem { question: string; answer: string; }
+export interface Stat { value: string; label: string; }
+
+interface Props {
+  /* Meta */
+  title?: string;
+  description?: string;
+  brand?: SalesPageBrand;
+  ogImage?: string;
+
+  /* Hero */
+  heroHeadline: string;
+  heroSubheadline?: string;
+  heroBadge?: string;
+  primaryCtaText?: string;
+  primaryCtaUrl?: string;
+
+  /* Problem */
+  problemTitle?: string;
+  problemBody?: string;
+  painPoints?: PainPoint[];
+
+  /* Solution */
+  solutionTitle?: string;
+  solutionBody?: string;
+  solutionHighlights?: string[];
+
+  /* Benefits */
+  benefitsTitle?: string;
+  benefitsSubtitle?: string;
+  benefits?: Benefit[];
+
+  /* SocialProof */
+  proofTitle?: string;
+  testimonials?: Testimonial[];
+  stats?: Stat[];
+
+  /* Offer */
+  offerTitle?: string;
+  offerSubtitle?: string;
+  price?: string;
+  priceOriginal?: string;
+  pricePeriod?: string;
+  offerItems?: OfferItem[];
+  offerCtaText?: string;
+  offerCtaUrl?: string;
+  offerBadge?: string;
+
+  /* Guarantee */
+  guaranteeTitle?: string;
+  guaranteeBody?: string;
+  guaranteeDays?: number;
+
+  /* FinalCTA */
+  finalCtaTitle?: string;
+  finalCtaUrgency?: string;
+  finalCtaText?: string;
+  finalCtaUrl?: string;
+  finalCtaSubText?: string;
+
+  /* FAQ */
+  faqTitle?: string;
+  faqItems?: FaqItem[];
+}
+
+const {
+  title = 'Transforme Seu Negócio',
+  description,
+  brand,
+  ogImage,
+  heroHeadline,
+  heroSubheadline,
+  heroBadge,
+  primaryCtaText = 'Quero Acesso Agora →',
+  primaryCtaUrl = '#oferta',
+  problemTitle,
+  problemBody,
+  painPoints = [],
+  solutionTitle,
+  solutionBody,
+  solutionHighlights = [],
+  benefitsTitle,
+  benefitsSubtitle,
+  benefits = [],
+  proofTitle,
+  testimonials = [],
+  stats = [],
+  offerTitle,
+  offerSubtitle,
+  price,
+  priceOriginal,
+  pricePeriod,
+  offerItems = [],
+  offerCtaText = primaryCtaText,
+  offerCtaUrl = '#',
+  offerBadge,
+  guaranteeTitle,
+  guaranteeBody,
+  guaranteeDays,
+  finalCtaTitle,
+  finalCtaUrgency,
+  finalCtaText = primaryCtaText,
+  finalCtaUrl = '#oferta',
+  finalCtaSubText,
+  faqTitle,
+  faqItems = [],
+} = Astro.props;
+---
+
+<BaseLayout
+  title={title}
+  description={description ?? heroSubheadline ?? ''}
+  brand={brand}
+  ctaText={primaryCtaText}
+  ctaUrl={primaryCtaUrl}
+  ogImage={ogImage}
+>
+  <!-- 1. Hero -->
+  <Hero
+    headline={heroHeadline}
+    subheadline={heroSubheadline}
+    ctaText={primaryCtaText}
+    ctaUrl={primaryCtaUrl}
+    badgeText={heroBadge}
+  />
+
+  <!-- 2. Problem -->
+  <Problem
+    title={problemTitle}
+    body={problemBody}
+    painPoints={painPoints}
+  />
+
+  <!-- 3. Solution -->
+  <Solution
+    title={solutionTitle}
+    body={solutionBody}
+    highlights={solutionHighlights}
+    ctaText={primaryCtaText}
+    ctaUrl={primaryCtaUrl}
+  />
+
+  <!-- 4. Benefits -->
+  <Benefits
+    title={benefitsTitle}
+    subtitle={benefitsSubtitle}
+    benefits={benefits}
+  />
+
+  <!-- 5. SocialProof -->
+  <SocialProof
+    title={proofTitle}
+    testimonials={testimonials}
+    statsRow={stats}
+  />
+
+  <!-- 6. Offer -->
+  <Offer
+    id="oferta"
+    title={offerTitle}
+    subtitle={offerSubtitle}
+    price={price}
+    priceOriginal={priceOriginal}
+    pricePeriod={pricePeriod}
+    items={offerItems}
+    ctaText={offerCtaText}
+    ctaUrl={offerCtaUrl}
+    badgeText={offerBadge}
+  />
+
+  <!-- 7. Guarantee -->
+  <Guarantee
+    title={guaranteeTitle}
+    body={guaranteeBody}
+    days={guaranteeDays}
+  />
+
+  <!-- 8. FinalCTA -->
+  <FinalCTA
+    title={finalCtaTitle}
+    urgencyText={finalCtaUrgency}
+    ctaText={finalCtaText}
+    ctaUrl={finalCtaUrl}
+    subText={finalCtaSubText}
+  />
+
+  <!-- 9. FAQ -->
+  <FAQ
+    title={faqTitle}
+    items={faqItems}
+  />
+</BaseLayout>

@@ -1,0 +1,120 @@
+---
+/** SocialProof section — depoimentos e resultados. Story 6.1 AC-2 */
+interface Testimonial {
+  name: string;
+  role?: string;
+  text: string;
+  avatar?: string;
+  rating?: number;
+}
+interface Props {
+  title?: string;
+  testimonials?: Testimonial[];
+  statsRow?: Array<{ value: string; label: string }>;
+}
+const {
+  title = 'Resultados Reais de Alunos Reais',
+  testimonials = [],
+  statsRow = [],
+} = Astro.props;
+---
+
+<section class="sp-proof" aria-label="Prova social">
+  <div class="sp-container">
+    <h2 class="sp-section-title">{title}</h2>
+
+    {statsRow.length > 0 && (
+      <ul class="sp-stats" role="list" aria-label="Estatísticas de resultados">
+        {statsRow.map(s => (
+          <li class="sp-stat">
+            <span class="sp-stat__value">{s.value}</span>
+            <span class="sp-stat__label">{s.label}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {testimonials.length > 0 && (
+      <ul class="sp-testimonials" role="list">
+        {testimonials.map(t => (
+          <li class="sp-testimonial">
+            {t.rating && (
+              <div class="sp-stars" aria-label={`${t.rating} de 5 estrelas`}>
+                {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+              </div>
+            )}
+            <blockquote class="sp-testimonial__text">"{t.text}"</blockquote>
+            <div class="sp-testimonial__author">
+              {t.avatar && (
+                <img src={t.avatar} alt="" aria-hidden="true" class="sp-avatar" width="40" height="40" loading="lazy" />
+              )}
+              <div>
+                <p class="sp-author-name">{t.name}</p>
+                {t.role && <p class="sp-author-role">{t.role}</p>}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  .sp-proof { background: #fff; padding: 80px 0; text-align: center; }
+  .sp-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+  .sp-section-title {
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    color: var(--sp-primary);
+    margin-bottom: 40px;
+  }
+  .sp-stats {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+  .sp-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+  }
+  .sp-stat__value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--sp-secondary);
+    font-family: var(--sp-heading-font);
+  }
+  .sp-stat__label { font-size: 0.85rem; opacity: 0.65; margin-top: 4px; }
+  .sp-testimonials {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 640px) { .sp-testimonials { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .sp-testimonials { grid-template-columns: repeat(3, 1fr); } }
+  .sp-testimonial {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: left;
+  }
+  .sp-stars { color: #f59e0b; font-size: 0.95rem; margin-bottom: 10px; }
+  .sp-testimonial__text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+  .sp-testimonial__author { display: flex; align-items: center; gap: 10px; }
+  .sp-avatar { border-radius: 50%; object-fit: cover; }
+  .sp-author-name { font-weight: 700; font-size: 0.9rem; }
+  .sp-author-role { font-size: 0.8rem; opacity: 0.6; }
+</style>

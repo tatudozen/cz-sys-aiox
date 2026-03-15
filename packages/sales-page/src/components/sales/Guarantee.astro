@@ -1,0 +1,68 @@
+---
+/** Guarantee section. Story 6.1 AC-2 */
+interface Props {
+  title?: string;
+  body?: string;
+  days?: number;
+  icon?: string;
+}
+const {
+  title = 'Garantia de 7 Dias',
+  body = 'Se em até 7 dias você não estiver satisfeito, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.',
+  days = 7,
+  icon = '🛡️',
+} = Astro.props;
+---
+
+<section class="sp-guarantee" aria-label="Garantia">
+  <div class="sp-container">
+    <div class="sp-guarantee-inner">
+      <div class="sp-guarantee-icon" aria-hidden="true">{icon}</div>
+      <div class="sp-guarantee-content">
+        <h2 class="sp-guarantee-title">{title}</h2>
+        <p class="sp-guarantee-body">{body}</p>
+        <p class="sp-guarantee-days">{days} dias de garantia incondicional</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sp-guarantee {
+    background: #f0fdf4;
+    border-top: 3px solid #22c55e;
+    border-bottom: 3px solid #22c55e;
+    padding: 60px 0;
+  }
+  .sp-container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+  .sp-guarantee-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+  @media (min-width: 640px) {
+    .sp-guarantee-inner {
+      flex-direction: row;
+      text-align: left;
+    }
+  }
+  .sp-guarantee-icon { font-size: 4rem; flex-shrink: 0; }
+  .sp-guarantee-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #15803d;
+    margin-bottom: 10px;
+  }
+  .sp-guarantee-body { font-size: 1rem; opacity: 0.8; margin-bottom: 12px; }
+  .sp-guarantee-days {
+    display: inline-block;
+    background: #22c55e;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+</style>
