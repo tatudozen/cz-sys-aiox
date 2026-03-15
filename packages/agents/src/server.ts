@@ -9,6 +9,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { CMOAgent } from './cmo/cmo-agent.js';
 import { CopywriterAgent } from './copywriter/copywriter-agent.js';
 import { DesignerAgent } from './designer/designer-agent.js';
+import { ReferralService } from './referral/referral-service.js';
 import { createLLMProvider } from './llm/factory.js';
 import type { AgentOutput } from './cmo/types.js';
 import type { BrandConfig } from '@copyzen/core';
@@ -292,6 +293,103 @@ app.post('/agents/designer/select-template', async (req: Request, res: Response)
     res.json({ success: true, data: { template: result } });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// --- Referral routes (Story 5.4) ---
+
+function createReferralService(): ReferralService {
+  // Lazy Supabase client creation — only when routes are actually called
+  // In production, pass the real @supabase/supabase-js client
+  const supabaseUrl = process.env.SUPABASE_URL ?? '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_ANON_KEY ?? '';
+
+  // Minimal fetch-based Supabase client compatible with SupabaseReferralClient interface
+  const supabase = {
+    from: (table: string) => ({
+      select: (columns: string) => ({
+        eq: (column: string, value: string | boolean) => ({
+          single: async () => {
+            const res = await fetch(
+              `${supabaseUrl}/rest/v1/${table}?${column}=eq.${value}&select=${encodeURIComponent(columns)}`,
+              { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Accept: 'application/vnd.pgrst.object+json' } },
+            );
+            if (!res.ok) return { data: null, error: { message: res.statusText } };
+            const data = await res.json();
+            return { data, error: null };
+          },
+          limit: async (n: number) => {
+            const res = await fetch(
+              `${supabaseUrl}/rest/v1/${table}?${column}=eq.${value}&select=${encodeURIComponent(columns)}&limit=${n}`,
+              { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } },
+            );
+            if (!res.ok) return { data: [], error: { message: res.statusText } };
+            return { data: await res.json(), error: null };
+          },
+        }),
+        order: (_col: string, _opts?: { ascending?: boolean }) => ({
+          limit: async (_n: number) => ({ data: [], error: null }),
+        }),
+      }),
+      insert: async (row: Record<string, unknown>) => {
+        const res = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+          body: JSON.stringify(row),
+        });
+        if (!res.ok) return { data: null, error: { message: await res.text() } };
+        const data = await res.json();
+        return { data: Array.isArray(data) ? data[0] : data, error: null };
+      },
+      update: (values: Record<string, unknown>) => ({
+        eq: async (column: string, value: string) => {
+          const res = await fetch(`${supabaseUrl}/rest/v1/${table}?${column}=eq.${value}`, {
+            method: 'PATCH',
+            headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(values),
+          });
+          return { data: null, error: res.ok ? null : { message: res.statusText } };
+        },
+      }),
+    }),
+  };
+
+  return new ReferralService({ supabase });
+}
+
+// POST /agents/referral/track — Lead B arrived via ?ref=CODE
+app.post('/agents/referral/track', async (req: Request, res: Response) => {
+  try {
+    const { referrer_code, referred_lead_id } = req.body as {
+      referrer_code: string;
+      referred_lead_id: string;
+    };
+
+    if (!referrer_code || !referred_lead_id) {
+      res.status(400).json({ error: 'Missing required fields: referrer_code, referred_lead_id' });
+      return;
+    }
+
+    const service = createReferralService();
+    const result = await service.trackReferral(referrer_code, referred_lead_id);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: message });
+  }
+});
+
+// GET /agents/referral/status/:code — Referral status for transformacao page
+app.get('/agents/referral/status/:code', async (req: Request, res: Response) => {
+  try {
+    const code = req.params['code'] as string;
+    const service = createReferralService();
+    const status = await service.getReferralStatus(code);
+    res.json({ success: true, data: status });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    const statusCode = message.includes('not found') ? 404 : 500;
+    res.status(statusCode).json({ error: message });
   }
 });
 

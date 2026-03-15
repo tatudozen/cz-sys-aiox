@@ -1,14 +1,17 @@
 ---
 /**
- * Transformação — FunWheel Stage T (VIP — unlocked after 3+ referrals)
- * Story 5.1 — AC-1, AC-4
- * The final stage of the A-R-T funnel. Premium content for VIP leads.
+ * Transformação — FunWheel Stage T (VIP — unlocked after referral goal)
+ * Story 5.1 — AC-1, AC-4 (base structure)
+ * Story 5.4 — AC-1–5 (referral tracking, VIP state, share buttons)
+ *
+ * Conditional states:
+ *   - Non-VIP: show referral sharing mechanic + counter
+ *   - VIP: show VIP welcome + community redirect
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import Section from '../components/Section.astro';
 import CTA from '../components/CTA.astro';
-import LeadForm from '../components/LeadForm.astro';
 import Footer from '../components/Footer.astro';
 import type { BrandThemeInput } from '../lib/theme';
 
@@ -16,135 +19,336 @@ interface Props {
   clientSlug?: string;
   brand?: BrandThemeInput;
   companyName?: string;
-  leadName?: string;
   headline?: string;
   subheadline?: string;
   offerTitle?: string;
   offerDescription?: string;
   ctaLabel?: string;
   ctaUrl?: string;
-  consultationFormUrl?: string;
+  /** URL to the agents Express server for referral status API */
+  referralApiUrl?: string;
+  /** Redirect URL for VIP members (GoHighLevel community/members area) */
+  vipCommunityUrl?: string;
+  /** Number of referrals needed for VIP access */
+  vipThreshold?: number;
+  ogImage?: string;
 }
 
 const {
   clientSlug = 'copyzen',
   brand,
   companyName = 'CopyZen',
-  leadName = 'você',
-  headline = `Parabéns, ${leadName}! Você é VIP.`,
-  subheadline = 'Você desbloqueou acesso exclusivo ao conteúdo de Transformação.',
+  headline = 'Desbloqueie Seu Acesso VIP',
+  subheadline = 'Indique 3 amigos e ganhe acesso exclusivo ao conteúdo de Transformação.',
   offerTitle = 'Sua Oferta Exclusiva VIP',
-  offerDescription = 'Como um membro VIP, você tem acesso privilegiado às nossas melhores estratégias e uma consultoria personalizada.',
-  ctaLabel = 'Quero Transformar Meu Negócio →',
-  ctaUrl = '#oferta',
-  consultationFormUrl = '/api/consultations',
+  offerDescription = 'Como membro VIP, você tem acesso privilegiado às melhores estratégias e uma consultoria personalizada.',
+  ctaLabel = 'Entrar na Comunidade VIP →',
+  ctaUrl = '#comunidade',
+  referralApiUrl = 'http://localhost:3001',
+  vipCommunityUrl = 'https://app.gohighlevel.com',
+  vipThreshold = 3,
+  ogImage,
 } = Astro.props;
 ---
 
 <BaseLayout
-  title={`${companyName} — Acesso VIP`}
+  title={`${companyName} — Transformação VIP`}
   description={subheadline}
   brand={brand}
+  ogImage={ogImage}
 >
-  <!-- VIP Hero -->
+  <!-- Hero -->
   <Hero
     headline={headline}
     subheadline={subheadline}
     gradientBg={true}
   >
-    <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
-      <span class="vip-badge px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wider">
-        🏆 Membro VIP
-      </span>
+    <!-- #hero-cta-area populated by JS based on VIP status -->
+    <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center" id="hero-cta-area">
+      <a
+        id="hero-community-btn"
+        href={vipCommunityUrl}
+        class="vip-hero-btn hidden px-8 py-4 rounded-xl font-bold text-lg bg-white cursor-pointer"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Entrar na Comunidade VIP 🏆
+      </a>
     </div>
   </Hero>
 
-  <!-- VIP Benefits -->
+  <!-- Non-VIP state: referral mechanic (hidden when VIP is confirmed) -->
   <Section
-    title="Seus Benefícios Exclusivos"
-    subtitle="Como VIP, você tem acesso a recursos que não estão disponíveis para o público geral."
+    id="referral-section"
+    title="Indique e Desbloqueie"
+    subtitle={`Compartilhe com ${vipThreshold} amigos. Quando eles se cadastrarem, você ganha acesso VIP.`}
     background="light"
-  >
-    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6" role="list">
-      {[
-        { icon: '🎓', title: 'Masterclass Exclusiva', desc: 'Acesso completo à masterclass avançada com módulos premium.' },
-        { icon: '📞', title: 'Consultoria 1:1', desc: 'Uma sessão de consultoria personalizada com nosso time.' },
-        { icon: '📊', title: 'Relatórios Avançados', desc: 'Análise aprofundada do seu negócio e oportunidades de crescimento.' },
-        { icon: '🤝', title: 'Comunidade VIP', desc: 'Acesso ao grupo exclusivo de membros VIP para networking.' },
-      ].map(benefit => (
-        <li class="benefit-card rounded-xl p-5 border flex gap-4">
-          <span class="text-2xl flex-shrink-0" aria-hidden="true">{benefit.icon}</span>
-          <div>
-            <h3 class="font-bold text-base mb-1">{benefit.title}</h3>
-            <p class="text-sm opacity-70">{benefit.desc}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </Section>
-
-  <!-- Exclusive Offer -->
-  <Section
-    id="oferta"
-    title={offerTitle}
-    subtitle={offerDescription}
-    background="white"
     centered={true}
   >
-    <div class="mt-8 max-w-lg mx-auto">
-      <div class="offer-card rounded-2xl p-8 text-white text-center">
-        <div class="text-4xl mb-4" aria-hidden="true">🚀</div>
-        <h3 class="text-2xl font-bold mb-2">Programa de Transformação</h3>
-        <p class="opacity-80 mb-6 text-base">
-          3 meses de acompanhamento intensivo, estratégias customizadas e suporte dedicado para transformar seu negócio.
-        </p>
+    <!-- Referral counter -->
+    <div class="mt-8 flex flex-col items-center gap-6">
+      <div class="counter-widget rounded-2xl p-8 text-center max-w-sm w-full">
+        <div class="text-5xl font-bold mb-1" id="referral-count">–</div>
+        <div class="text-sm opacity-70">de <span id="vip-threshold-display">{vipThreshold}</span> indicações</div>
+        <div class="progress-bar-track mt-4 rounded-full overflow-hidden">
+          <div class="progress-bar-fill rounded-full transition-all duration-700" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Share buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+        <!-- WhatsApp (primary) -->
+        <a
+          id="whatsapp-btn"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="whatsapp-btn flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base flex-1 cursor-pointer"
+        >
+          <span aria-hidden="true">📱</span>
+          WhatsApp
+        </a>
+
+        <!-- Copy link -->
+        <button
+          id="copy-link-btn"
+          type="button"
+          class="copy-btn flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base flex-1 cursor-pointer"
+        >
+          <span aria-hidden="true">🔗</span>
+          Copiar link
+        </button>
+      </div>
+
+      <!-- Share URL display -->
+      <div id="share-url-display" class="hidden w-full max-w-md">
+        <input
+          id="share-url-input"
+          type="text"
+          readonly
+          aria-label="Seu link de indicação"
+          class="share-url-input w-full px-4 py-3 rounded-lg text-sm text-gray-700 border"
+        />
+      </div>
+
+      <!-- Instagram Stories tip (optional) -->
+      <button
+        id="insta-btn"
+        type="button"
+        class="insta-btn text-sm underline opacity-60 hover:opacity-100 cursor-pointer"
+      >
+        Como compartilhar nos Stories
+      </button>
+    </div>
+  </Section>
+
+  <!-- VIP state: hidden until VIP confirmed by JS -->
+  <div id="vip-section" class="hidden">
+    <Section
+      title={offerTitle}
+      subtitle={offerDescription}
+      background="brand"
+      centered={true}
+    >
+      <div class="mt-8 flex flex-col items-center gap-6">
+        <div class="vip-badge px-6 py-3 rounded-full font-bold text-lg uppercase tracking-wider">
+          🏆 Membro VIP
+        </div>
+
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 max-w-2xl w-full text-left" role="list">
+          {[
+            { icon: '🎓', title: 'Masterclass Exclusiva', desc: 'Acesso completo à masterclass avançada com módulos premium.' },
+            { icon: '📞', title: 'Consultoria 1:1', desc: 'Uma sessão de consultoria personalizada com nosso time.' },
+            { icon: '📊', title: 'Relatórios Avançados', desc: 'Análise aprofundada do seu negócio e oportunidades de crescimento.' },
+            { icon: '🤝', title: 'Comunidade VIP', desc: 'Acesso ao grupo exclusivo de membros VIP para networking.' },
+          ].map(benefit => (
+            <li class="benefit-card rounded-xl p-5 border bg-white flex gap-4">
+              <span class="text-2xl flex-shrink-0" aria-hidden="true">{benefit.icon}</span>
+              <div>
+                <h3 class="font-bold text-base mb-1">{benefit.title}</h3>
+                <p class="text-sm opacity-70">{benefit.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
         <CTA
           label={ctaLabel}
           href={ctaUrl}
           variant="secondary"
           size="lg"
-          fullWidth={true}
         />
       </div>
-    </div>
-  </Section>
-
-  <!-- Consultation Form -->
-  <Section
-    title="Agendar Consultoria Gratuita"
-    subtitle="Preencha abaixo para reservar seu horário."
-    background="light"
-    centered={true}
-  >
-    <div class="mt-6">
-      <LeadForm
-        actionUrl={consultationFormUrl}
-        showName={true}
-        showPhone={true}
-        submitLabel="Agendar Minha Consultoria →"
-        hiddenFields={{ client_slug: clientSlug, page: 'transformacao', tier: 'vip' }}
-      />
-    </div>
-  </Section>
+    </Section>
+  </div>
 
   <Footer companyName={companyName} />
 </BaseLayout>
+
+<script define:vars={{ referralApiUrl, vipCommunityUrl, vipThreshold, clientSlug }}>
+  // Read referral code from URL param or localStorage
+  const params = new URLSearchParams(window.location.search);
+  const refCode = params.get('ref') ?? localStorage.getItem('cz_referral_code') ?? null;
+
+  if (refCode) {
+    localStorage.setItem('cz_referral_code', refCode);
+  }
+
+  function buildShareUrl(code) {
+    return `${window.location.origin}/${clientSlug}/apresentacao/?ref=${encodeURIComponent(code)}`;
+  }
+
+  function updateShareUI(code) {
+    const shareUrl = buildShareUrl(code);
+    const whatsappBtn = document.getElementById('whatsapp-btn');
+    const copyBtn = document.getElementById('copy-link-btn');
+    const shareInput = document.getElementById('share-url-input');
+    const shareDisplay = document.getElementById('share-url-display');
+
+    const whatsappMsg = encodeURIComponent(`Confira esse conteúdo exclusivo: ${shareUrl}`);
+    if (whatsappBtn) {
+      whatsappBtn.setAttribute('href', `https://wa.me/?text=${whatsappMsg}`);
+    }
+
+    if (shareInput) shareInput.value = shareUrl;
+    if (shareDisplay) shareDisplay.classList.remove('hidden');
+
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          copyBtn.textContent = '✓ Copiado!';
+          setTimeout(() => {
+            copyBtn.textContent = '🔗 Copiar link';
+          }, 2000);
+        } catch {
+          if (shareInput) { shareInput.select(); document.execCommand('copy'); }
+        }
+      });
+    }
+  }
+
+  function updateCounter(count, threshold) {
+    const countEl = document.getElementById('referral-count');
+    const progressEl = document.getElementById('progress-fill');
+    const thresholdEl = document.getElementById('vip-threshold-display');
+
+    if (countEl) countEl.textContent = String(count);
+    if (thresholdEl) thresholdEl.textContent = String(threshold);
+    if (progressEl) {
+      const pct = Math.min(100, Math.round((count / threshold) * 100));
+      progressEl.style.width = `${pct}%`;
+    }
+  }
+
+  function showVipState() {
+    const vipSection = document.getElementById('vip-section');
+    const referralSection = document.getElementById('referral-section');
+    const heroCommunityBtn = document.getElementById('hero-community-btn');
+
+    if (vipSection) vipSection.classList.remove('hidden');
+    if (referralSection) referralSection.style.display = 'none';
+    if (heroCommunityBtn) heroCommunityBtn.classList.remove('hidden');
+  }
+
+  async function loadReferralStatus(code) {
+    try {
+      const res = await fetch(`${referralApiUrl}/agents/referral/status/${encodeURIComponent(code)}`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.data ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function init() {
+    if (!refCode) return;
+
+    updateShareUI(refCode);
+
+    const status = await loadReferralStatus(refCode);
+    if (!status) return;
+
+    updateCounter(status.referral_count, status.vip_threshold ?? vipThreshold);
+
+    if (status.vip_access) {
+      showVipState();
+      // Auto-redirect VIP members to community after 3s
+      setTimeout(() => { window.location.href = vipCommunityUrl; }, 3000);
+    }
+  }
+
+  // Instagram Stories tip
+  const instaBtn = document.getElementById('insta-btn');
+  if (instaBtn) {
+    instaBtn.addEventListener('click', () => {
+      const shareUrl = refCode ? buildShareUrl(refCode) : `${window.location.origin}/${clientSlug}/apresentacao/`;
+      window.prompt('Copie o link abaixo e cole no Instagram Stories como sticker de link:', shareUrl);
+    });
+  }
+
+  init();
+</script>
 
 <style>
   .vip-badge {
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.5);
   }
   .benefit-card {
     border-color: #e2e8f0;
-    background: #ffffff;
     transition: box-shadow 0.2s;
   }
   .benefit-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
-  .offer-card {
-    background: var(--brand-gradient);
+  .counter-widget {
+    background: white;
+    border: 2px solid var(--brand-primary, #08164a);
+    color: var(--brand-primary, #08164a);
+  }
+  .progress-bar-track {
+    height: 8px;
+    background: #e2e8f0;
+  }
+  .progress-bar-fill {
+    height: 8px;
+    background: var(--brand-gradient, linear-gradient(135deg, #08164a, #38bafc));
+  }
+  .whatsapp-btn {
+    background: #25d366;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  .whatsapp-btn:hover {
+    background: #1ebe5d;
+  }
+  .copy-btn {
+    background: var(--brand-primary, #08164a);
+    color: #ffffff;
+    border: none;
+  }
+  .copy-btn:hover {
+    opacity: 0.9;
+  }
+  .share-url-input {
+    border-color: #e2e8f0;
+    background: #f8fafc;
+  }
+  .insta-btn {
+    background: none;
+    border: none;
+    color: var(--brand-primary, #08164a);
+  }
+  .vip-hero-btn {
+    color: var(--brand-primary, #08164a);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+  }
+  .vip-hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   }
 </style>
