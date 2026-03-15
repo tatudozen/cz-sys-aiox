@@ -7,7 +7,7 @@ import { Agent } from '../base/agent.js';
 import type { AgentConfig } from '../base/agent.js';
 import type { BrandConfig } from '@copyzen/core';
 import { buildBrandGuardrails, validateBrandCompliance } from '@copyzen/core';
-import type { PostCopy, LandingPageCopy, SalesPageCopy, CopyMode, PostType, PageType } from './types.js';
+import type { PostCopy, LandingPageCopy, SalesPageCopy, CarouselSlide, CopyMode, PostType, PageType } from './types.js';
 
 // AC-3: System prompt with brand guardrails
 function buildCopywriterSystemPrompt(brandConfig: BrandConfig, mode?: CopyMode): string {
@@ -214,6 +214,68 @@ Retorne JSON:
       ...parsed,
       metadata: { brand_compliant: compliance.compliant },
     };
+  }
+
+  // Story 4.2 — AC-1, AC-4, AC-5: generateCarouselCopy
+  async generateCarouselCopy(
+    brief: string,
+    brandConfig: BrandConfig,
+    mode: CopyMode,
+    slideCount = 5,
+  ): Promise<CarouselSlide[]> {
+    const systemPrompt = buildCopywriterSystemPrompt(brandConfig, mode);
+
+    const ctaInstruction =
+      mode === 'inception'
+        ? `Slide final: convite suave tipo "Salva esse post" ou "Conta pra gente nos comentários"`
+        : `Slide final: CTA forte e direto como "Clique no link da bio" ou "Acesse agora"`;
+
+    const userPrompt = `Crie um carrossel para Instagram de ${slideCount} slides no modo ${mode}.
+
+BRIEFING: ${brief}
+
+ESTRUTURA:
+- Slide 0 (CAPA): headline poderosa que para o scroll — máx 8 palavras
+- Slides 1 a ${slideCount - 2}: copy conciso por slide, aprofundando um ponto específico — máx 3 linhas cada
+- ${ctaInstruction}
+
+Retorne um array JSON com ${slideCount} objetos:
+[
+  { "index": 0, "copy_text": "...", "layout_hint": "cover" },
+  { "index": 1, "copy_text": "...", "layout_hint": "content" },
+  ...
+  { "index": ${slideCount - 1}, "copy_text": "...", "layout_hint": "cta" }
+]`;
+
+    const response = await this.callLLM(systemPrompt, userPrompt, {
+      maxTokens: 1500,
+      temperature: 0.7,
+    });
+
+    // Parse JSON array
+    let slides: Array<{ index: number; copy_text: string; layout_hint: CarouselSlide['layout_hint'] }>;
+    try {
+      const jsonMatch = response.content.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) throw new Error('No JSON array found');
+      slides = JSON.parse(jsonMatch[0]);
+    } catch {
+      // Fallback: generate basic structure
+      slides = Array.from({ length: slideCount }, (_, i) => ({
+        index: i,
+        copy_text: i === 0
+          ? 'Descubra como transformar seu negócio'
+          : i === slideCount - 1
+            ? (mode === 'inception' ? 'Salva esse post para lembrar!' : 'Acesse agora — link na bio!')
+            : `Ponto ${i}: ${brief.slice(0, 50)}`,
+        layout_hint: (i === 0 ? 'cover' : i === slideCount - 1 ? 'cta' : 'content') as CarouselSlide['layout_hint'],
+      }));
+    }
+
+    return slides.map((slide) => ({
+      ...slide,
+      image_prompt: '',  // Filled by DesignerAgent.generateCarouselVisuals
+      image_url: null,
+    }));
   }
 
   // AC-7: revise — accepts feedback and produces revised copy

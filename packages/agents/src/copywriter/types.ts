@@ -34,6 +34,15 @@ export interface LandingPageCopy {
   };
 }
 
+// AC-3 Story 4.2: CarouselSlide — single slide in a carousel post
+export interface CarouselSlide {
+  index: number;
+  copy_text: string;
+  image_prompt: string;
+  image_url: string | null;
+  layout_hint: 'cover' | 'content' | 'cta';
+}
+
 // Sales page copy
 export interface SalesPageCopy {
   hero_headline: string;

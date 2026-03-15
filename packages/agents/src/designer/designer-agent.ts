@@ -9,6 +9,7 @@ import type { BrandConfig } from '@copyzen/core';
 import { buildBrandTheme } from '@copyzen/core';
 import type { DesignerBrandTheme, DesignerOutput, ImageFormat } from './types.js';
 import type { ReviewResult } from '../cmo/types.js';
+import type { CarouselSlide } from '../copywriter/types.js';
 
 // Known fonts on Google Fonts (subset for common brand fonts)
 const GOOGLE_FONTS_BASE = 'https://fonts.googleapis.com/css2?family=';
@@ -173,6 +174,50 @@ Retorne JSON: {"verdict": "approved"|"revision_needed", "feedback": "feedback em
       feedback: 'Revisão visual básica concluída — verificação de paleta não disponível sem API de visão.',
       compliance: { compliant: true, issues: [] },
     };
+  }
+
+  // Story 4.2 — AC-2: generateCarouselVisuals — prompts with visual coherence across slides
+  async generateCarouselVisuals(slides: CarouselSlide[], brandConfig: BrandConfig): Promise<CarouselSlide[]> {
+    const toneMap: Record<string, string> = {
+      formal: 'professional, sophisticated, consistent brand palette',
+      casual: 'friendly, warm, lifestyle photography style',
+      technical: 'clean, minimal, tech aesthetic, precise',
+    };
+
+    const visualStyle = `${toneMap[brandConfig.tone_of_voice] ?? 'professional'}, ${brandConfig.primary_color} dominant color, ${brandConfig.heading_font} typography`;
+
+    const updatedSlides: CarouselSlide[] = [];
+
+    for (const slide of slides) {
+      const layoutDescriptions: Record<CarouselSlide['layout_hint'], string> = {
+        cover: 'bold cover slide, dominant visual, text overlay space at bottom',
+        content: 'clean content slide, supporting visual, space for text on right or bottom',
+        cta: 'high-impact CTA slide, strong visual, clear action button area, urgency feel',
+      };
+
+      const systemPrompt = buildImagePromptSystemPrompt();
+      const userPrompt = `Create an Instagram carousel slide image prompt (slide ${slide.index + 1}/${slides.length}).
+
+SLIDE CONTEXT: ${slide.copy_text}
+LAYOUT: ${layoutDescriptions[slide.layout_hint]}
+VISUAL STYLE: ${visualStyle}
+BRAND COLORS: ${brandConfig.primary_color} (primary), ${brandConfig.accent_color} (accent)
+COHERENCE: Must visually match the other slides in this ${slides.length}-slide carousel sequence.
+
+Generate a concise, high-quality image prompt in English.`;
+
+      const response = await this.callLLM(systemPrompt, userPrompt, {
+        maxTokens: 200,
+        temperature: 0.7,
+      });
+
+      updatedSlides.push({
+        ...slide,
+        image_prompt: response.content.trim(),
+      });
+    }
+
+    return updatedSlides;
   }
 
   // Utility: build designer output record

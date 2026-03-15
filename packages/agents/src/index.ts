@@ -4,7 +4,7 @@ export { Agent } from './base/agent.js';
 export type { AgentConfig } from './base/agent.js';
 export { CMOAgent } from './cmo/cmo-agent.js';
 export { CopywriterAgent } from './copywriter/copywriter-agent.js';
-export type { PostCopy, LandingPageCopy, SalesPageCopy, CopyMode, PostType, PageType } from './copywriter/types.js';
+export type { PostCopy, LandingPageCopy, SalesPageCopy, CarouselSlide, CopyMode, PostType, PageType } from './copywriter/types.js';
 export { DesignerAgent } from './designer/designer-agent.js';
 export type { DesignerBrandTheme, DesignerOutput, ImageFormat } from './designer/types.js';
 export type {
