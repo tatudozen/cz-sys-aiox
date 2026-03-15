@@ -1,0 +1,198 @@
+{
+  "name": "Generate Sales Page Content",
+  "description": "Story 6.2 AC-1/AC-3: Orchestrates sales page generation. Loads briefing + brand config + FunWheel lead count, CMO defines strategy, Copywriter generates all 9 sections, saves to sales_page_content.",
+  "version": 1,
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "parameters": {
+        "path": "generate-sales-page",
+        "method": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "generate-sales-page-webhook"
+    },
+    {
+      "id": "2",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Validate required fields: client_id, brief\nconst body = $input.first().json;\n\nconst clientId = body.client_id ?? null;\nconst brief = body.brief ?? null;\nconst projectPlanId = body.project_plan_id ?? null;\n\nif (!clientId) throw new Error('Missing required field: client_id');\nif (!brief) throw new Error('Missing required field: brief');\n\nreturn [{\n  json: {\n    client_id: clientId,\n    brief,\n    project_plan_id: projectPlanId,\n    started_at: new Date().toISOString(),\n  }\n}];"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Load Brand Config",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/brand_configs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Accept", "value": "application/json" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "client_id", "value": "=eq.{{ $('Validate Input').item.json.client_id }}" },
+            { "name": "select", "value": "id,client_id,tone_of_voice,keywords,company_name,primary_color,secondary_color" },
+            { "name": "limit", "value": "1" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4",
+      "name": "Get FunWheel Lead Count",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 480],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Accept", "value": "application/json" },
+            { "name": "Prefer", "value": "count=exact" },
+            { "name": "Range", "value": "0-0" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "client_id", "value": "=eq.{{ $('Validate Input').item.json.client_id }}" },
+            { "name": "select", "value": "id" },
+            { "name": "limit", "value": "1" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Prepare Agent Input",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Merge brand config + lead count into agent payload\nconst validated = $('Validate Input').item.json;\nconst brandArr = $('Load Brand Config').item.json;\nconst brand = Array.isArray(brandArr) ? brandArr[0] : brandArr;\n\n// Extract lead count from Content-Range header (format: 0-0/N)\nconst contentRange = $('Get FunWheel Lead Count').item.headers?.['content-range'] ?? '';\nconst leadCountMatch = contentRange.match(/\\/(\\d+)$/);\nconst leadCount = leadCountMatch ? parseInt(leadCountMatch[1], 10) : 0;\n\nif (!brand) {\n  throw new Error(`No brand config found for client_id: ${validated.client_id}`);\n}\n\nreturn [{\n  json: {\n    client_id: validated.client_id,\n    project_plan_id: validated.project_plan_id,\n    brief: validated.brief,\n    brand_config: brand,\n    lead_count: leadCount,\n  }\n}];"
+      }
+    },
+    {
+      "id": "6",
+      "name": "CMO — Build Sales Strategy",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1120, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTS_API_URL }}/agents/cmo/sales-strategy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.AGENTS_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify({ brief: $json.brief, brand_config: $json.brand_config }) }}"
+      }
+    },
+    {
+      "id": "7",
+      "name": "Copywriter — Generate Sales Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1340, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTS_API_URL }}/agents/copywriter/sales-page-content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.AGENTS_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify({ brief: $('Prepare Agent Input').item.json.brief, brand_config: $('Prepare Agent Input').item.json.brand_config, strategy: $('CMO — Build Sales Strategy').item.json, lead_count: $('Prepare Agent Input').item.json.lead_count }) }}"
+      }
+    },
+    {
+      "id": "8",
+      "name": "Save to sales_page_content",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1560, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sales_page_content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify({ client_id: $('Prepare Agent Input').item.json.client_id, project_plan_id: $('Prepare Agent Input').item.json.project_plan_id, sections: $('Copywriter — Generate Sales Page').item.json, status: 'draft', brand_compliant: $('Copywriter — Generate Sales Page').item.json.metadata?.brand_compliant ?? false, lead_count_snapshot: $('Prepare Agent Input').item.json.lead_count }) }}"
+      }
+    },
+    {
+      "id": "9",
+      "name": "Respond with Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1780, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'ok', sales_page_content_id: $('Save to sales_page_content').item.json[0]?.id ?? null, brand_compliant: $('Copywriter — Generate Sales Page').item.json.metadata?.brand_compliant ?? false, lead_count: $('Prepare Agent Input').item.json.lead_count }) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[ { "node": "Validate Input", "type": "main", "index": 0 } ]]
+    },
+    "Validate Input": {
+      "main": [
+        [ { "node": "Load Brand Config", "type": "main", "index": 0 } ],
+        [ { "node": "Get FunWheel Lead Count", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Load Brand Config": {
+      "main": [[ { "node": "Prepare Agent Input", "type": "main", "index": 0 } ]]
+    },
+    "Get FunWheel Lead Count": {
+      "main": [[ { "node": "Prepare Agent Input", "type": "main", "index": 0 } ]]
+    },
+    "Prepare Agent Input": {
+      "main": [[ { "node": "CMO — Build Sales Strategy", "type": "main", "index": 0 } ]]
+    },
+    "CMO — Build Sales Strategy": {
+      "main": [[ { "node": "Copywriter — Generate Sales Page", "type": "main", "index": 0 } ]]
+    },
+    "Copywriter — Generate Sales Page": {
+      "main": [[ { "node": "Save to sales_page_content", "type": "main", "index": 0 } ]]
+    },
+    "Save to sales_page_content": {
+      "main": [[ { "node": "Respond with Result", "type": "main", "index": 0 } ]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

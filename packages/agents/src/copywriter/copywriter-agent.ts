@@ -7,8 +7,10 @@ import { Agent } from '../base/agent.js';
 import type { AgentConfig } from '../base/agent.js';
 import type { BrandConfig } from '@copyzen/core';
 import { buildBrandGuardrails, validateBrandCompliance } from '@copyzen/core';
-import type { PostCopy, LandingPageCopy, SalesPageCopy, CarouselSlide, CopyMode, PostType, PageType, ApresentacaoCopy, JourneyStep } from './types.js';
+import type { PostCopy, LandingPageCopy, SalesPageCopy, SalesPageContent, CarouselSlide, CopyMode, PostType, PageType, ApresentacaoCopy, JourneyStep } from './types.js';
 import { buildApresentacaoPrompt } from './prompts/landing-page-apresentacao.js';
+import { buildSalesPagePrompt } from './prompts/sales-page.js';
+import type { SalesStrategy } from '../cmo/prompts/sales-strategy.js';
 
 // AC-3: System prompt with brand guardrails
 function buildCopywriterSystemPrompt(brandConfig: BrandConfig, mode?: CopyMode): string {
@@ -261,6 +263,72 @@ Retorne JSON:
       ...parsed,
       metadata: { brand_compliant: compliance.compliant },
     };
+  }
+
+  // Story 6.2 — AC-2: generateSalesPageContent (full 9-section version)
+  async generateSalesPageContent(
+    brief: string,
+    brandConfig: BrandConfig,
+    strategy?: SalesStrategy,
+    leadCount?: number,
+  ): Promise<SalesPageContent> {
+    const systemPrompt = buildCopywriterSystemPrompt(brandConfig, 'atracao_fatal');
+    const userPrompt = buildSalesPagePrompt(brief, brandConfig, strategy, leadCount);
+
+    const response = await this.callLLM(systemPrompt, userPrompt, {
+      maxTokens: 3500,
+      temperature: 0.65,
+    });
+
+    const fallback: Omit<SalesPageContent, 'metadata'> = {
+      hero: {
+        headline: 'Transforme Seu Negócio com Nossa Solução',
+        subheadline: 'O método comprovado para resultados reais e consistentes.',
+        cta_text: 'Quero Começar Agora →',
+      },
+      problem: {
+        text: 'Você está trabalhando muito mas os resultados não acompanham o esforço.',
+        pain_points: ['Falta de clareza na mensagem', 'Leads desqualificados', 'Baixa taxa de conversão', 'Tempo desperdiçado'],
+      },
+      solution: {
+        text: 'Nossa solução resolve os principais obstáculos que impedem seu crescimento.',
+        value_props: ['Método comprovado', 'Suporte dedicado', 'Resultados mensuráveis', 'Implementação rápida'],
+      },
+      benefits: [
+        { title: 'Mais Clientes', description: 'Atraia clientes qualificados que realmente querem comprar.' },
+        { title: 'Mais Conversões', description: 'Aumente sua taxa de fechamento com as técnicas certas.' },
+        { title: 'Mais Autoridade', description: 'Posicione-se como referência no seu nicho.' },
+        { title: 'Mais Tempo', description: 'Automatize processos e foque no que importa.' },
+      ],
+      social_proof: [
+        { quote: 'Transformei meu negócio completamente em 3 meses.', author: 'Cliente A', role: 'Empresário' },
+        { quote: 'Os resultados superaram minhas expectativas.', author: 'Cliente B', role: 'Consultor' },
+        { quote: 'Melhor investimento que fiz para minha carreira.', author: 'Cliente C', role: 'Profissional Liberal' },
+      ],
+      offer: {
+        title: 'O Que Está Incluído',
+        items: ['Acesso completo ao método', 'Suporte por 30 dias', 'Materiais bônus', 'Acesso à comunidade'],
+        price_display: 'Consulte',
+      },
+      guarantee: { text: 'Garantia total de satisfação. Se não ficar satisfeito, devolvemos 100%.', duration: '30 dias' },
+      faq: [
+        { question: 'Para quem é?', answer: 'Para profissionais que querem crescer.' },
+        { question: 'Em quanto tempo vejo resultados?', answer: 'A maioria dos clientes vê resultados nas primeiras 2 semanas.' },
+        { question: 'E se não funcionar?', answer: 'Você tem 30 dias de garantia total.' },
+      ],
+      final_cta: {
+        headline: 'A Hora de Mudar é Agora',
+        urgency: 'Vagas limitadas. Não deixe para depois.',
+        button_text: 'Garantir Minha Vaga →',
+      },
+    };
+
+    const parsed = parseJsonSafe<Omit<SalesPageContent, 'metadata'>>(response.content, fallback);
+
+    const contentToCheck = `${parsed.hero.headline} ${parsed.problem.text} ${parsed.solution.text}`;
+    const compliance = validateBrandCompliance(contentToCheck, brandConfig);
+
+    return { ...parsed, metadata: { brand_compliant: compliance.compliant } };
   }
 
   // Story 4.2 — AC-1, AC-4, AC-5: generateCarouselCopy

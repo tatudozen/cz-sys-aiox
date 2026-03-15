@@ -74,3 +74,19 @@ export interface SalesPageCopy {
     brand_compliant: boolean;
   };
 }
+
+/**
+ * Full 9-section sales page content (Story 6.2 — AC-2)
+ */
+export interface SalesPageContent {
+  hero: { headline: string; subheadline: string; cta_text: string };
+  problem: { text: string; pain_points: string[] };
+  solution: { text: string; value_props: string[] };
+  benefits: Array<{ title: string; description: string }>;
+  social_proof: Array<{ quote: string; author: string; role: string }>;
+  offer: { title: string; items: string[]; price_display: string };
+  guarantee: { text: string; duration: string };
+  faq: Array<{ question: string; answer: string }>;
+  final_cta: { headline: string; urgency: string; button_text: string };
+  metadata: { brand_compliant: boolean };
+}
