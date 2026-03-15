@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint .",
@@ -12,6 +14,7 @@
     "dev": "npm run dev -w packages/funwheel"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.99.1",
     "@types/node": "^22.0.0",
     "eslint": "^9.0.0",
     "prettier": "^3.4.0",
