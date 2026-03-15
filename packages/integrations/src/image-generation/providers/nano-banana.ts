@@ -114,7 +114,7 @@ export class NanaBananaProvider implements ImageGenerator {
   private async downloadToStorage(
     imageUrl: string,
     generationId: string,
-    options: ImageOptions,
+    _options: ImageOptions,
   ): Promise<string> {
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {

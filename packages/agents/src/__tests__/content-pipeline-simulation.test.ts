@@ -10,7 +10,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CopywriterAgent } from '../copywriter/copywriter-agent.js';
-import { CMOAgent } from '../cmo/cmo-agent.js';
+
 import { MockLLMProvider } from '../llm/factory.js';
 import type { BrandConfig } from '@copyzen/core';
 
