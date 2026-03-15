@@ -1,8 +1,11 @@
 ---
 /**
  * Retenção — FunWheel Stage R (unlocked after lead submits form)
- * Story 5.1 — AC-1, AC-4
- * Deeper content engagement. Encourages referral sharing to unlock Transformação.
+ * Story 5.1 — AC-1, AC-4 (base structure)
+ * Story 5.3 — AC-1, AC-3, AC-6 (lead magnet form + referral_code + GHL integration)
+ *
+ * Deeper content engagement. Captures lead + delivers lead magnet.
+ * Encourages referral sharing to unlock Transformação (VIP).
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
@@ -18,9 +21,16 @@ interface Props {
   leadName?: string;
   headline?: string;
   subheadline?: string;
-  mainContent?: string;
+  /** Lead magnet title shown in offer section */
+  leadMagnetTitle?: string;
+  leadMagnetDescription?: string;
+  /** API endpoint for lead capture (agents Express server) */
+  captureApiUrl?: string;
+  /** URL to redirect after successful form submission */
+  thankyouUrl?: string;
   referralUrl?: string;
   transformacaoUrl?: string;
+  ogImage?: string;
 }
 
 const {
@@ -28,11 +38,15 @@ const {
   brand,
   companyName = 'CopyZen',
   leadName = 'você',
-  headline = `Bem-vindo, ${leadName}!`,
-  subheadline = 'Você deu o primeiro passo. Agora vamos aprofundar.',
-  mainContent = 'Aqui você encontra conteúdo exclusivo preparado especialmente para a sua jornada. Cada etapa foi desenhada para trazer mais valor e resultados concretos.',
+  headline = 'Acesso Exclusivo ao Conteúdo',
+  subheadline = 'Preencha abaixo para receber seu material exclusivo gratuitamente.',
+  leadMagnetTitle = 'Guia Gratuito: 5 Estratégias para Multiplicar seus Clientes',
+  leadMagnetDescription = 'Um guia prático com as estratégias mais eficazes para atrair clientes qualificados, construir autoridade e escalar seu negócio com copywriting inteligente.',
+  captureApiUrl = '/api/capture-lead',
+  thankyouUrl = '../obrigado/',
   referralUrl = '#compartilhar',
   transformacaoUrl = '../transformacao/',
+  ogImage,
 } = Astro.props;
 
 const referralsNeeded = 3;
@@ -42,6 +56,7 @@ const referralsNeeded = 3;
   title={`${companyName} — Conteúdo Exclusivo`}
   description={subheadline}
   brand={brand}
+  ogImage={ogImage}
 >
   <!-- Hero -->
   <Hero
@@ -50,86 +65,284 @@ const referralsNeeded = 3;
     gradientBg={true}
   />
 
-  <!-- Exclusive Content -->
+  <!-- Lead Magnet Offer + Capture Form -->
   <Section
-    title="Seu Conteúdo Exclusivo"
-    subtitle={mainContent}
+    title="Seu Material Exclusivo"
+    background="light"
+  >
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-6">
+
+      <!-- Lead magnet description -->
+      <div class="flex flex-col gap-4">
+        <div class="offer-card rounded-2xl p-6 text-white">
+          <div class="text-4xl mb-3" aria-hidden="true">📘</div>
+          <h3 class="text-xl font-bold mb-2">{leadMagnetTitle}</h3>
+          <p class="opacity-90 text-sm leading-relaxed">{leadMagnetDescription}</p>
+        </div>
+
+        <ul class="flex flex-col gap-2" role="list">
+          {[
+            'Formato PDF para leitura offline',
+            'Conteúdo 100% prático e aplicável',
+            'Sem spam — cancelamento a qualquer momento',
+          ].map((item) => (
+            <li class="flex items-center gap-2 text-sm">
+              <span class="check-icon" aria-hidden="true">✓</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Lead capture form -->
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <h3 class="text-lg font-bold mb-4">Acesso Imediato e Gratuito</h3>
+
+        <form id="lead-form" novalidate>
+          <input type="hidden" name="client_slug" value={clientSlug} />
+          <input type="hidden" name="source_page" value="retencao" />
+          <input type="hidden" id="referral_code" name="referral_code" value="" />
+
+          <div class="mb-4">
+            <label for="lead-name" class="block text-sm font-medium mb-1">Seu nome *</label>
+            <input
+              type="text"
+              id="lead-name"
+              name="name"
+              required
+              autocomplete="name"
+              placeholder="Como você se chama?"
+              class="form-input w-full px-4 py-3 rounded-lg border text-base"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label for="lead-email" class="block text-sm font-medium mb-1">Seu melhor e-mail *</label>
+            <input
+              type="email"
+              id="lead-email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="email@exemplo.com"
+              class="form-input w-full px-4 py-3 rounded-lg border text-base"
+            />
+          </div>
+
+          <div id="form-error" class="hidden text-red-600 text-sm mb-3" role="alert"></div>
+          <div id="form-success" class="hidden text-green-600 text-sm mb-3" role="status"></div>
+
+          <button
+            type="submit"
+            id="submit-btn"
+            class="submit-btn w-full px-6 py-4 font-semibold text-lg rounded-xl text-white transition-all duration-200 cursor-pointer"
+          >
+            Quero Meu Acesso Gratuito →
+          </button>
+
+          <p class="text-xs text-center mt-3 opacity-50">
+            Sem spam. Seus dados estão seguros.
+          </p>
+        </form>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Content Preview (unlocked after form) -->
+  <Section
+    title="O que você vai aprender"
     background="white"
   >
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-      <article class="content-card rounded-xl p-6 border">
-        <span class="text-2xl mb-3 block" aria-hidden="true">📚</span>
-        <h3 class="font-bold text-lg mb-2">Módulo 1: Fundamentos</h3>
-        <p class="text-sm opacity-70 mb-4">Entenda as bases da metodologia e como ela se aplica ao seu negócio.</p>
-        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-available">Disponível</span>
-      </article>
-
-      <article class="content-card rounded-xl p-6 border">
-        <span class="text-2xl mb-3 block" aria-hidden="true">🎯</span>
-        <h3 class="font-bold text-lg mb-2">Módulo 2: Estratégia</h3>
-        <p class="text-sm opacity-70 mb-4">Planejamento e execução de campanhas com foco em resultados mensuráveis.</p>
-        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-available">Disponível</span>
-      </article>
-
-      <article class="content-card rounded-xl p-6 border">
-        <span class="text-2xl mb-3 block" aria-hidden="true">🔒</span>
-        <h3 class="font-bold text-lg mb-2">Módulo 3: Avançado (VIP)</h3>
-        <p class="text-sm opacity-70 mb-4">Acesso desbloqueado após {referralsNeeded} indicações de amigos.</p>
-        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-locked">Bloqueado</span>
-      </article>
-
-      <article class="content-card rounded-xl p-6 border locked-card">
-        <span class="text-2xl mb-3 block" aria-hidden="true">🏆</span>
-        <h3 class="font-bold text-lg mb-2">Transformação (VIP)</h3>
-        <p class="text-sm opacity-70 mb-4">A etapa final — acesso VIP exclusivo para quem indicou {referralsNeeded} amigos.</p>
-        <a href={transformacaoUrl} class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-locked">
-          Desbloqueie →
-        </a>
-      </article>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+      {[
+        { icon: '🎯', title: 'Posicionamento', desc: 'Como se posicionar para atrair os clientes certos e afastar os errados.' },
+        { icon: '✍️', title: 'Copywriting', desc: 'Mensagens que conectam, convencem e convertem sem parecer forçado.' },
+        { icon: '📱', title: 'Redes Sociais', desc: 'Estratégia de conteúdo para criar autoridade e gerar leads organicamente.' },
+        { icon: '🔄', title: 'Follow-up', desc: 'Sistema automatizado para nutrir leads e fechar mais vendas.' },
+      ].map((item) => (
+        <div class="content-card flex gap-4 p-4 rounded-xl border">
+          <span class="text-2xl flex-shrink-0" aria-hidden="true">{item.icon}</span>
+          <div>
+            <h3 class="font-semibold mb-1">{item.title}</h3>
+            <p class="text-sm opacity-70">{item.desc}</p>
+          </div>
+        </div>
+      ))}
     </div>
   </Section>
 
   <!-- Referral CTA -->
   <Section
+    id="compartilhar"
     title="Indique Amigos, Desbloqueie Mais"
     subtitle={`Compartilhe com ${referralsNeeded} amigos para desbloquear o conteúdo VIP de Transformação.`}
     background="brand"
     centered={true}
   >
     <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
-      <CTA
-        label="Compartilhar agora →"
-        href={referralUrl}
-        variant="secondary"
-        size="lg"
-      />
-      <p class="text-sm text-white opacity-80">
-        0 de {referralsNeeded} indicações realizadas
-      </p>
+      <button
+        id="share-btn"
+        class="inline-flex items-center justify-center gap-2 bg-white font-semibold px-8 py-4 rounded-xl text-lg transition-all duration-200 hover:opacity-90 cursor-pointer share-cta"
+      >
+        Compartilhar meu link →
+      </button>
+      <p class="text-sm text-white opacity-80">0 de {referralsNeeded} indicações</p>
+    </div>
+
+    <div id="share-url-display" class="hidden mt-4 max-w-md mx-auto">
+      <p class="text-white text-sm mb-2">Seu link de indicação:</p>
+      <div class="flex gap-2">
+        <input
+          id="share-url-input"
+          type="text"
+          readonly
+          class="flex-1 px-3 py-2 rounded-lg text-sm text-gray-800"
+        />
+        <button
+          id="copy-link-btn"
+          class="px-4 py-2 bg-white rounded-lg text-sm font-semibold share-cta cursor-pointer"
+        >
+          Copiar
+        </button>
+      </div>
     </div>
   </Section>
 
   <Footer companyName={companyName} />
 </BaseLayout>
 
+<script define:vars={{ captureApiUrl, thankyouUrl, clientSlug }}>
+  // Generate referral_code (6 chars alphanumeric) on page load
+  function generateReferralCode() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  }
+
+  const referralCode = generateReferralCode();
+  const refInput = document.getElementById('referral_code');
+  if (refInput) refInput.value = referralCode;
+
+  // Share button: show referral URL
+  const shareBtn = document.getElementById('share-btn');
+  const shareDisplay = document.getElementById('share-url-display');
+  const shareInput = document.getElementById('share-url-input');
+  const copyBtn = document.getElementById('copy-link-btn');
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      const shareUrl = `${window.location.origin}/${clientSlug}/apresentacao/?ref=${referralCode}`;
+      if (shareInput) shareInput.value = shareUrl;
+      if (shareDisplay) shareDisplay.classList.remove('hidden');
+
+      // Try native share API first
+      if (navigator.share) {
+        navigator.share({ url: shareUrl, title: 'Acesse esse conteúdo exclusivo!' }).catch(() => {});
+      }
+    });
+  }
+
+  if (copyBtn && shareInput) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(shareInput.value);
+        copyBtn.textContent = 'Copiado!';
+        setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
+      } catch {
+        shareInput.select();
+        document.execCommand('copy');
+      }
+    });
+  }
+
+  // Form submission
+  const form = document.getElementById('lead-form');
+  const errorDiv = document.getElementById('form-error');
+  const successDiv = document.getElementById('form-success');
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!(form instanceof HTMLFormElement)) return;
+
+      if (errorDiv) errorDiv.classList.add('hidden');
+      if (successDiv) successDiv.classList.add('hidden');
+      if (submitBtn) {
+        submitBtn.textContent = 'Enviando...';
+        submitBtn.setAttribute('disabled', 'true');
+      }
+
+      try {
+        const formData = new FormData(form);
+        const body = Object.fromEntries(formData.entries());
+
+        const response = await fetch(captureApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao enviar. Tente novamente.');
+        }
+
+        // Redirect to thank you page
+        window.location.href = thankyouUrl;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.';
+        if (errorDiv) {
+          errorDiv.textContent = msg;
+          errorDiv.classList.remove('hidden');
+        }
+        if (submitBtn) {
+          submitBtn.textContent = 'Quero Meu Acesso Gratuito →';
+          submitBtn.removeAttribute('disabled');
+        }
+      }
+    });
+  }
+</script>
+
 <style>
+  .offer-card {
+    background: var(--brand-gradient);
+  }
+  .check-icon {
+    color: var(--brand-secondary);
+    font-weight: bold;
+  }
   .content-card {
     border-color: #e2e8f0;
     background: #ffffff;
-    transition: box-shadow 0.2s;
   }
-  .content-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  .form-input {
+    border-color: #e2e8f0;
+    background-color: #ffffff;
+    color: var(--brand-text);
+    outline: none;
+    transition: border-color 0.2s;
   }
-  .locked-card {
+  .form-input:focus {
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-secondary) 20%, transparent);
+  }
+  .submit-btn {
+    background: var(--brand-gradient);
+  }
+  .submit-btn:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+  .submit-btn:disabled {
     opacity: 0.7;
+    cursor: not-allowed;
   }
-  .badge-available {
-    background: color-mix(in srgb, var(--brand-secondary) 15%, transparent);
+  .share-cta {
     color: var(--brand-primary);
-  }
-  .badge-locked {
-    background: #f1f5f9;
-    color: #64748b;
   }
 </style>

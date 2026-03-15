@@ -12,3 +12,9 @@ export type {
   StorageClient,
   ImageUsageLog,
 } from './image-generation/types.js';
+
+export { GoHighLevelClient } from './gohighlevel/ghl-client.js';
+export type { GHLContact, GHLContactResponse, GHLConfig } from './gohighlevel/ghl-client.js';
+
+export { PdfGenerator } from './pdf-generator/pdf-generator.js';
+export type { LeadMagnetContent, PdfBrandConfig, PdfGeneratorConfig, PdfResult } from './pdf-generator/pdf-generator.js';
