@@ -45,22 +45,34 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$KVM4_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$KVM4_HOST" >> ~/.ssh/known_hosts
+        env:
+          KVM4_SSH_KEY: ${{ secrets.KVM4_SSH_KEY }}
+          KVM4_HOST: ${{ secrets.KVM4_HOST }}
+
       - name: Deploy FunWheel to KVM4
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avzr --delete
-          path: packages/funwheel/dist/
-          remote_path: ${{ secrets.KVM4_DEPLOY_PATH }}
-          remote_host: ${{ secrets.KVM4_HOST }}
-          remote_user: ${{ secrets.KVM4_USER }}
-          remote_key: ${{ secrets.KVM4_SSH_KEY }}
+        run: |
+          rsync -avzr --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            packages/funwheel/dist/ \
+            "$KVM4_USER@$KVM4_HOST:$KVM4_DEPLOY_PATH"
+        env:
+          KVM4_HOST: ${{ secrets.KVM4_HOST }}
+          KVM4_USER: ${{ secrets.KVM4_USER }}
+          KVM4_DEPLOY_PATH: ${{ secrets.KVM4_DEPLOY_PATH }}
 
       - name: Deploy Sales Page to KVM4
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avzr --delete
-          path: packages/sales-page/dist/
-          remote_path: ${{ secrets.KVM4_SALES_DEPLOY_PATH }}
-          remote_host: ${{ secrets.KVM4_HOST }}
-          remote_user: ${{ secrets.KVM4_USER }}
-          remote_key: ${{ secrets.KVM4_SSH_KEY }}
+        run: |
+          rsync -avzr --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            packages/sales-page/dist/ \
+            "$KVM4_USER@$KVM4_HOST:$KVM4_SALES_DEPLOY_PATH"
+        env:
+          KVM4_HOST: ${{ secrets.KVM4_HOST }}
+          KVM4_USER: ${{ secrets.KVM4_USER }}
+          KVM4_SALES_DEPLOY_PATH: ${{ secrets.KVM4_SALES_DEPLOY_PATH }}
