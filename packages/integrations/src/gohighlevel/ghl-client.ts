@@ -1,6 +1,7 @@
 /**
  * GoHighLevel (GHL) CRM Client
- * Story 5.3 — AC-2
+ * Story 5.3 — AC-2 (initial)
+ * Story 5.5 — AC-1 (complete: updateContact, removeTag, multi-tenant tags)
  *
  * Uses GHL REST API v1 for contact management.
  * Auth: Bearer token via GHL_API_KEY env var.
@@ -120,6 +121,75 @@ export class GoHighLevelClient {
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`GoHighLevel triggerWorkflow error ${response.status}: ${error}`);
+    }
+  }
+
+  /**
+   * Update an existing contact's data.
+   */
+  async updateContact(contactId: string, data: Partial<GHLContact>): Promise<GHLContactResponse> {
+    if (!this.apiKey) {
+      throw new Error('GHL_API_KEY is not configured');
+    }
+
+    const response = await fetch(`${GHL_BASE_URL}/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        Version: '2021-07-28',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`GoHighLevel updateContact error ${response.status}: ${error}`);
+    }
+
+    return (await response.json()) as GHLContactResponse;
+  }
+
+  /**
+   * Remove a tag from an existing contact.
+   */
+  async removeTag(contactId: string, tag: string): Promise<void> {
+    if (!this.apiKey) {
+      throw new Error('GHL_API_KEY is not configured');
+    }
+
+    const response = await fetch(`${GHL_BASE_URL}/contacts/${contactId}/tags`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        Version: '2021-07-28',
+      },
+      body: JSON.stringify({ tags: [tag] }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`GoHighLevel removeTag error ${response.status}: ${error}`);
+    }
+  }
+
+  /**
+   * Add multiple FunWheel stage tags to a contact (multi-tenant pattern).
+   * Tags: funwheel-lead, client-{clientSlug}, stage-{stage}
+   */
+  async addFunWheelTags(
+    contactId: string,
+    opts: { clientSlug: string; stage: 'retencao' | 'transformacao' | 'vip' },
+  ): Promise<void> {
+    const tags = [
+      'funwheel-lead',
+      `client-${opts.clientSlug}`,
+      `stage-${opts.stage}`,
+    ];
+
+    for (const tag of tags) {
+      await this.addTag(contactId, tag);
     }
   }
 }

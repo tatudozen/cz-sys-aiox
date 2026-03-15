@@ -1,0 +1,150 @@
+{
+  "name": "GHL Lead Stage Change → Supabase",
+  "description": "Story 5.5 AC-4: Receives GoHighLevel webhook when a contact moves pipeline stages. Updates leads.source_page in Supabase to reflect the current FunWheel stage.",
+  "version": 1,
+  "nodes": [
+    {
+      "id": "1",
+      "name": "GHL Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "parameters": {
+        "path": "ghl-lead-stage-change",
+        "method": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "ghl-stage-webhook"
+    },
+    {
+      "id": "2",
+      "name": "Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Validate incoming GHL webhook payload\nconst body = $input.first().json;\n\nconst contactId = body.contact?.id ?? body.contactId ?? null;\nconst email = body.contact?.email ?? body.email ?? null;\nconst pipelineStage = body.pipeline?.stage ?? body.pipelineStage ?? null;\n\nif (!contactId) {\n  throw new Error('Missing contactId in GHL webhook payload');\n}\n\n// Map GHL pipeline stage name → FunWheel source_page\nconst stageMap = {\n  'retencao': 'retencao',\n  'transformacao': 'transformacao',\n  'vip': 'transformacao',\n  'apresentacao': 'apresentacao',\n  'sales': 'sales_page',\n};\n\nconst lowerStage = (pipelineStage ?? '').toLowerCase();\nconst sourcePage = stageMap[lowerStage] ?? 'retencao';\n\nreturn [{\n  json: {\n    ghl_contact_id: contactId,\n    email,\n    pipeline_stage: pipelineStage,\n    source_page: sourcePage,\n    received_at: new Date().toISOString(),\n  }\n}];"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Find Lead by GHL Contact ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Accept", "value": "application/json" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "ghl_contact_id", "value": "=eq.{{ $json.ghl_contact_id }}" },
+            { "name": "select", "value": "id,source_page,ghl_contact_id" },
+            { "name": "limit", "value": "1" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4",
+      "name": "Lead Found?",
+      "type": "n8n-nodes-base.if",
+      "position": [900, 300],
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Update lead source_page",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1120, 200],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "ghl_contact_id", "value": "=eq.{{ $('Validate Payload').item.json.ghl_contact_id }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source_page", "value": "={{ $('Validate Payload').item.json.source_page }}" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6",
+      "name": "Log Missing Lead",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 420],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Lead not found for this GHL contact — log for investigation\nconst data = $('Validate Payload').item.json;\nconsole.warn('[GHL Stage Change] Lead not found for contact:', data.ghl_contact_id);\nreturn [{ json: { status: 'lead_not_found', ghl_contact_id: data.ghl_contact_id } }];"
+      }
+    },
+    {
+      "id": "7",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1360, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\" }"
+      }
+    }
+  ],
+  "connections": {
+    "GHL Webhook": {
+      "main": [[ { "node": "Validate Payload", "type": "main", "index": 0 } ]]
+    },
+    "Validate Payload": {
+      "main": [[ { "node": "Find Lead by GHL Contact ID", "type": "main", "index": 0 } ]]
+    },
+    "Find Lead by GHL Contact ID": {
+      "main": [[ { "node": "Lead Found?", "type": "main", "index": 0 } ]]
+    },
+    "Lead Found?": {
+      "main": [
+        [ { "node": "Update lead source_page", "type": "main", "index": 0 } ],
+        [ { "node": "Log Missing Lead", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Update lead source_page": {
+      "main": [[ { "node": "Respond 200", "type": "main", "index": 0 } ]]
+    },
+    "Log Missing Lead": {
+      "main": [[ { "node": "Respond 200", "type": "main", "index": 0 } ]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
