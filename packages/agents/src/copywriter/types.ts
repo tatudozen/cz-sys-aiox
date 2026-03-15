@@ -34,6 +34,22 @@ export interface LandingPageCopy {
   };
 }
 
+// Story 5.2: Detailed Apresentação copy structure
+export interface JourneyStep {
+  step: number;
+  title: string;
+  description: string;
+}
+
+export interface ApresentacaoCopy {
+  hero: { headline: string; subheadline: string };
+  problem: { text: string; pain_points: string[] };
+  journey: JourneyStep[];
+  solution: { text: string; value_props: string[] };
+  cta: { text: string };
+  metadata: { brand_compliant: boolean };
+}
+
 // AC-3 Story 4.2: CarouselSlide — single slide in a carousel post
 export interface CarouselSlide {
   index: number;

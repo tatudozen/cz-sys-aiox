@@ -7,7 +7,8 @@ import { Agent } from '../base/agent.js';
 import type { AgentConfig } from '../base/agent.js';
 import type { BrandConfig } from '@copyzen/core';
 import { buildBrandGuardrails, validateBrandCompliance } from '@copyzen/core';
-import type { PostCopy, LandingPageCopy, SalesPageCopy, CarouselSlide, CopyMode, PostType, PageType } from './types.js';
+import type { PostCopy, LandingPageCopy, SalesPageCopy, CarouselSlide, CopyMode, PostType, PageType, ApresentacaoCopy, JourneyStep } from './types.js';
+import { buildApresentacaoPrompt } from './prompts/landing-page-apresentacao.js';
 
 // AC-3: System prompt with brand guardrails
 function buildCopywriterSystemPrompt(brandConfig: BrandConfig, mode?: CopyMode): string {
@@ -166,6 +167,52 @@ Retorne JSON:
       ...parsed,
       metadata: { page_type: pageType, brand_compliant: compliance.compliant },
     };
+  }
+
+  // Story 5.2: generateApresentacaoCopy — specialized for FunWheel Stage A
+  async generateApresentacaoCopy(brief: string, brandConfig: BrandConfig): Promise<ApresentacaoCopy> {
+    const systemPrompt = buildCopywriterSystemPrompt(brandConfig, 'inception');
+    const userPrompt = buildApresentacaoPrompt(brief, brandConfig);
+
+    const response = await this.callLLM(systemPrompt, userPrompt, {
+      maxTokens: 2000,
+      temperature: 0.65,
+    });
+
+    const fallbackJourney: JourneyStep[] = [
+      { step: 1, title: 'O Diagnóstico', description: 'Identificamos onde você está.' },
+      { step: 2, title: 'O Plano', description: 'Estruturamos o caminho para a mudança.' },
+      { step: 3, title: 'A Execução', description: 'Implementamos com suporte dedicado.' },
+      { step: 4, title: 'A Transformação', description: 'Você alcança resultados mensuráveis.' },
+    ];
+
+    const parsed = parseJsonSafe<ApresentacaoCopy>(response.content, {
+      hero: {
+        headline: 'Descubra o Poder da Transformação',
+        subheadline: 'Seu guia de 3 passos para o sucesso.',
+      },
+      problem: {
+        text: 'Muitos profissionais enfrentam os mesmos desafios todos os dias.',
+        pain_points: ['Falta de clareza no posicionamento', 'Dificuldade em atrair clientes', 'Sem sistema de follow-up'],
+      },
+      journey: fallbackJourney,
+      solution: {
+        text: 'Nossa metodologia foi desenvolvida para transformar esses desafios em oportunidades.',
+        value_props: ['Estratégia comprovada', 'Suporte personalizado', 'Resultados mensuráveis'],
+      },
+      cta: { text: 'Quero Saber Mais →' },
+      metadata: { brand_compliant: false },
+    });
+
+    const allText = [
+      parsed.hero.headline,
+      parsed.hero.subheadline,
+      parsed.problem.text,
+      parsed.solution.text,
+    ].join(' ');
+    const compliance = validateBrandCompliance(allText, brandConfig);
+
+    return { ...parsed, metadata: { brand_compliant: compliance.compliant } };
   }
 
   // AC-2: generateSalesPageCopy

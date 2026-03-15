@@ -1,7 +1,9 @@
 ---
 /**
  * Apresentação — FunWheel Stage A (always visible, no gate)
- * Story 5.1 — AC-1, AC-4
+ * Story 5.1 — AC-1, AC-4 (base structure)
+ * Story 5.2 — AC-1, AC-3, AC-4 (scroll storytelling + problem/journey/solution + double CTA)
+ *
  * The first page in the A-R-T funnel. Captures lead and routes to Retenção.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -11,16 +13,29 @@ import LeadForm from '../components/LeadForm.astro';
 import Footer from '../components/Footer.astro';
 import type { BrandThemeInput } from '../lib/theme';
 
+interface JourneyStep {
+  step: number;
+  title: string;
+  description: string;
+}
+
 interface Props {
-  /** Client slug for multi-client builds */
   clientSlug?: string;
-  /** Brand config for theming */
   brand?: BrandThemeInput;
   companyName?: string;
   headline?: string;
   subheadline?: string;
-  /** Intro/value proposition text */
-  valueProposition?: string;
+  ogImage?: string;
+  /** Problem section */
+  problemText?: string;
+  painPoints?: string[];
+  /** Journey steps (3-4 steps) */
+  journey?: JourneyStep[];
+  /** Solution section */
+  solutionText?: string;
+  valueProps?: string[];
+  /** CTA */
+  ctaText?: string;
   formActionUrl?: string;
   retencaoUrl?: string;
 }
@@ -31,7 +46,26 @@ const {
   companyName = 'CopyZen',
   headline = 'Descubra o Poder da Transformação',
   subheadline = 'Seu Guia de 3 Passos para o Sucesso',
-  valueProposition = 'Atraia, retenha e transforme seus leads com estratégias de marketing inteligentes.',
+  ogImage,
+  problemText = 'Muitos profissionais enfrentam os mesmos desafios todos os dias. A falta de clareza no posicionamento e a dificuldade em atrair os clientes certos impede o crescimento.',
+  painPoints = [
+    'Dificuldade em se diferenciar da concorrência',
+    'Marketing sem sistema e sem previsibilidade',
+    'Clientes que não entendem o valor do seu trabalho',
+  ],
+  journey = [
+    { step: 1, title: 'O Diagnóstico', description: 'Identificamos onde você está e o que está bloqueando seu crescimento.' },
+    { step: 2, title: 'O Plano', description: 'Estruturamos um caminho claro e personalizado para a mudança.' },
+    { step: 3, title: 'A Execução', description: 'Implementamos as estratégias com suporte dedicado em cada etapa.' },
+    { step: 4, title: 'A Transformação', description: 'Você alcança resultados mensuráveis e sustentáveis.' },
+  ],
+  solutionText = 'Nossa metodologia foi desenvolvida para transformar esses desafios em oportunidades reais de crescimento.',
+  valueProps = [
+    'Estratégia comprovada e personalizada',
+    'Suporte dedicado em cada etapa',
+    'Resultados mensuráveis desde o início',
+  ],
+  ctaText = 'Quero Participar →',
   formActionUrl = '/api/leads',
   retencaoUrl = '../retencao/',
 } = Astro.props;
@@ -41,70 +75,101 @@ const {
   title={`${companyName} — Bem-vindo`}
   description={subheadline}
   brand={brand}
+  ogImage={ogImage}
+  ogTitle={headline}
 >
-  <!-- Hero Section -->
+  <!-- Hero Section — CTA duplo: topo -->
   <Hero
     headline={headline}
     subheadline={subheadline}
     gradientBg={true}
   >
-    <div class="mt-8">
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
       <a
         href="#cadastro"
-        class="inline-flex items-center gap-2 bg-white font-semibold px-8 py-4 rounded-xl text-lg transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 shadow-lg cta-hero"
+        class="inline-flex items-center justify-center gap-2 bg-white font-semibold px-8 py-4 rounded-xl text-lg transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 shadow-lg cta-hero"
       >
-        Quero Participar →
+        {ctaText}
+      </a>
+      <a
+        href="#como-funciona"
+        class="inline-flex items-center justify-center px-8 py-4 rounded-xl text-lg font-semibold border-2 border-white text-white hover:bg-white/10 transition-all duration-200"
+      >
+        Saiba Mais ↓
       </a>
     </div>
   </Hero>
 
-  <!-- Value Proposition -->
+  <!-- Problem Section — scroll reveal -->
   <Section
-    title="Por que participar?"
-    subtitle={valueProposition}
+    title="Você reconhece esses desafios?"
+    subtitle={problemText}
+    background="white"
+  >
+    <ul class="mt-6 flex flex-col gap-3" role="list">
+      {painPoints.map((point) => (
+        <li class="reveal-item flex items-start gap-3 p-4 rounded-xl border border-red-100 bg-red-50">
+          <span class="text-red-500 mt-0.5 flex-shrink-0" aria-hidden="true">✗</span>
+          <span class="text-sm sm:text-base">{point}</span>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- Journey Section — A → R → T storytelling -->
+  <Section
+    id="como-funciona"
+    title="A Jornada de Transformação"
+    subtitle="Em 4 etapas estruturadas, você sai de onde está e chega onde quer."
     background="light"
     centered={true}
   >
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
-      <div class="flex flex-col items-center text-center p-4">
-        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 feature-icon" aria-hidden="true">
-          <span class="text-2xl">✨</span>
-        </div>
-        <h3 class="font-semibold text-base mb-2">Estratégia Comprovada</h3>
-        <p class="text-sm opacity-70">Metodologia A-R-T para maximizar conversões em cada etapa do funil.</p>
-      </div>
-      <div class="flex flex-col items-center text-center p-4">
-        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 feature-icon" aria-hidden="true">
-          <span class="text-2xl">🎯</span>
-        </div>
-        <h3 class="font-semibold text-base mb-2">Personalizado para Você</h3>
-        <p class="text-sm opacity-70">Conteúdo adaptado ao perfil e necessidades da sua empresa.</p>
-      </div>
-      <div class="flex flex-col items-center text-center p-4">
-        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 feature-icon" aria-hidden="true">
-          <span class="text-2xl">📈</span>
-        </div>
-        <h3 class="font-semibold text-base mb-2">Resultados Reais</h3>
-        <p class="text-sm opacity-70">Métricas claras e acompanhamento de cada etapa da jornada.</p>
-      </div>
-    </div>
+    <ol class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" role="list">
+      {journey.map((step) => (
+        <li class="reveal-item journey-step flex flex-col items-center text-center p-6 rounded-2xl bg-white border shadow-sm">
+          <div class="step-number w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl mb-4 text-white" aria-hidden="true">
+            {step.step}
+          </div>
+          <h3 class="font-bold text-base mb-2">{step.title}</h3>
+          <p class="text-sm opacity-70 leading-relaxed">{step.description}</p>
+        </li>
+      ))}
+    </ol>
   </Section>
 
-  <!-- Lead Form -->
+  <!-- Solution Section -->
+  <Section
+    title="A Solução que Você Estava Procurando"
+    subtitle={solutionText}
+    background="white"
+  >
+    <ul class="mt-6 flex flex-col gap-3" role="list">
+      {valueProps.map((prop) => (
+        <li class="reveal-item flex items-start gap-3 p-4 rounded-xl border solution-border bg-white">
+          <span class="mt-0.5 flex-shrink-0 solution-check" aria-hidden="true">✓</span>
+          <span class="text-sm sm:text-base font-medium">{prop}</span>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- Lead Form — CTA duplo: fundo -->
   <Section
     title="Comece Agora — É Gratuito"
     subtitle="Cadastre-se e receba acesso ao conteúdo exclusivo."
-    background="white"
+    background="brand"
     centered={true}
   >
     <div id="cadastro" class="mt-6">
-      <LeadForm
-        actionUrl={formActionUrl}
-        showName={true}
-        showPhone={false}
-        submitLabel="Quero Participar →"
-        hiddenFields={{ client_slug: clientSlug, page: 'apresentacao' }}
-      />
+      <div class="bg-white rounded-2xl p-8 max-w-md mx-auto shadow-xl">
+        <LeadForm
+          actionUrl={formActionUrl}
+          showName={true}
+          showPhone={false}
+          submitLabel={ctaText}
+          hiddenFields={{ client_slug: clientSlug, page: 'apresentacao' }}
+        />
+      </div>
     </div>
   </Section>
 
@@ -115,8 +180,39 @@ const {
   .cta-hero {
     color: var(--brand-primary);
   }
-  .feature-icon {
-    background: color-mix(in srgb, var(--brand-secondary) 15%, transparent);
-    color: var(--brand-primary);
+
+  .step-number {
+    background: var(--brand-gradient);
+  }
+
+  .solution-border {
+    border-color: color-mix(in srgb, var(--brand-secondary) 30%, transparent);
+  }
+
+  .solution-check {
+    color: var(--brand-secondary);
+    font-weight: bold;
+  }
+
+  /* Scroll-driven reveal animations — CSS only, no heavy JS */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-item {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: reveal-up 0.5s ease-out forwards;
+    }
+
+    /* Stagger sibling items */
+    .reveal-item:nth-child(1) { animation-delay: 0.05s; }
+    .reveal-item:nth-child(2) { animation-delay: 0.15s; }
+    .reveal-item:nth-child(3) { animation-delay: 0.25s; }
+    .reveal-item:nth-child(4) { animation-delay: 0.35s; }
+  }
+
+  @keyframes reveal-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

@@ -1,0 +1,44 @@
+---
+/**
+ * SEOHead — Reusable SEO meta tags component
+ * Story 5.2 — AC-5
+ */
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogTitle?: string;
+  ogType?: 'website' | 'article';
+  locale?: string;
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogImage,
+  ogTitle,
+  ogType = 'website',
+  locale = 'pt_BR',
+} = Astro.props;
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={ogType} />
+<meta property="og:locale" content={locale} />
+<meta property="og:title" content={ogTitle ?? title} />
+<meta property="og:description" content={description} />
+{ogImage && <meta property="og:image" content={ogImage} />}
+{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={ogTitle ?? title} />
+<meta name="twitter:description" content={description} />
+{ogImage && <meta name="twitter:image" content={ogImage} />}
