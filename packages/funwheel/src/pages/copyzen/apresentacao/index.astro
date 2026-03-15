@@ -1,0 +1,29 @@
+---
+/**
+ * CopyZen demo client — Apresentação page
+ * Story 5.1 — AC-5: Multi-client build output
+ * Output: dist/copyzen/apresentacao/index.html
+ */
+import Apresentacao from '../../../templates/apresentacao.astro';
+
+const brand = {
+  primary_color: '#08164a',
+  secondary_color: '#38bafc',
+  accent_color: '#38bafc',
+  background_color: '#ffffff',
+  text_color: '#1a202c',
+  heading_font: 'Montserrat',
+  body_font: 'Open Sans',
+};
+---
+
+<Apresentacao
+  clientSlug="copyzen"
+  brand={brand}
+  companyName="CopyZen"
+  headline="Descubra o Poder da Transformação"
+  subheadline="Seu Guia de 3 Passos para o Sucesso no Marketing Digital"
+  valueProposition="Atraia, retenha e transforme seus leads com estratégias de marketing inteligentes e copywriting assistido por IA."
+  formActionUrl="/api/leads"
+  retencaoUrl="/copyzen/retencao/"
+/>

@@ -1,0 +1,89 @@
+---
+/**
+ * CTA — Brand-aware call-to-action button / section
+ * Story 5.1 — AC-3
+ */
+
+interface Props {
+  label: string;
+  href?: string;
+  type?: 'button' | 'submit';
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+}
+
+const {
+  label,
+  href,
+  type = 'button',
+  variant = 'primary',
+  size = 'lg',
+  fullWidth = false,
+} = Astro.props;
+
+const sizeClass: Record<string, string> = {
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-6 py-3 text-base',
+  lg: 'px-8 py-4 text-lg',
+};
+---
+
+{href ? (
+  <a
+    href={href}
+    class:list={[
+      'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+      sizeClass[size],
+      fullWidth ? 'w-full' : '',
+      variant === 'primary' ? 'cta-primary' : '',
+      variant === 'secondary' ? 'cta-secondary' : '',
+      variant === 'outline' ? 'cta-outline' : '',
+    ]}
+  >
+    {label}
+  </a>
+) : (
+  <button
+    type={type}
+    class:list={[
+      'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer',
+      sizeClass[size],
+      fullWidth ? 'w-full' : '',
+      variant === 'primary' ? 'cta-primary' : '',
+      variant === 'secondary' ? 'cta-secondary' : '',
+      variant === 'outline' ? 'cta-outline' : '',
+    ]}
+  >
+    {label}
+  </button>
+)}
+
+<style>
+  .cta-primary {
+    background: var(--brand-primary);
+    color: #ffffff;
+  }
+  .cta-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .cta-secondary {
+    background: var(--brand-secondary);
+    color: #ffffff;
+  }
+  .cta-secondary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .cta-outline {
+    border: 2px solid var(--brand-primary);
+    color: var(--brand-primary);
+    background: transparent;
+  }
+  .cta-outline:hover {
+    background: var(--brand-primary);
+    color: #ffffff;
+  }
+</style>

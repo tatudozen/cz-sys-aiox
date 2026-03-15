@@ -1,0 +1,117 @@
+---
+/**
+ * LeadForm — Brand-aware lead capture form
+ * Story 5.1 — AC-3
+ */
+
+interface Props {
+  /** Form submission endpoint (n8n webhook or API route) */
+  actionUrl?: string;
+  /** Show name field */
+  showName?: boolean;
+  /** Show phone field */
+  showPhone?: boolean;
+  submitLabel?: string;
+  /** Hidden fields sent with form */
+  hiddenFields?: Record<string, string>;
+}
+
+const {
+  actionUrl = '#',
+  showName = true,
+  showPhone = false,
+  submitLabel = 'Quero Participar →',
+  hiddenFields = {},
+} = Astro.props;
+---
+
+<form
+  action={actionUrl}
+  method="POST"
+  class="lead-form w-full max-w-md mx-auto"
+  novalidate
+>
+  <!-- Hidden fields -->
+  {Object.entries(hiddenFields).map(([name, value]) => (
+    <input type="hidden" name={name} value={value} />
+  ))}
+
+  {showName && (
+    <div class="mb-4">
+      <label for="lead-name" class="block text-sm font-medium mb-1">
+        Seu nome *
+      </label>
+      <input
+        type="text"
+        id="lead-name"
+        name="name"
+        required
+        autocomplete="name"
+        placeholder="Como você se chama?"
+        class="lead-input w-full px-4 py-3 rounded-lg border text-base focus:outline-none"
+      />
+    </div>
+  )}
+
+  <div class="mb-4">
+    <label for="lead-email" class="block text-sm font-medium mb-1">
+      Seu melhor e-mail *
+    </label>
+    <input
+      type="email"
+      id="lead-email"
+      name="email"
+      required
+      autocomplete="email"
+      placeholder="email@exemplo.com"
+      class="lead-input w-full px-4 py-3 rounded-lg border text-base focus:outline-none"
+    />
+  </div>
+
+  {showPhone && (
+    <div class="mb-4">
+      <label for="lead-phone" class="block text-sm font-medium mb-1">
+        WhatsApp (opcional)
+      </label>
+      <input
+        type="tel"
+        id="lead-phone"
+        name="phone"
+        autocomplete="tel"
+        placeholder="(00) 00000-0000"
+        class="lead-input w-full px-4 py-3 rounded-lg border text-base focus:outline-none"
+      />
+    </div>
+  )}
+
+  <button
+    type="submit"
+    class="lead-submit w-full px-6 py-4 font-semibold text-lg rounded-xl text-white transition-all duration-200 mt-2 cursor-pointer"
+  >
+    {submitLabel}
+  </button>
+
+  <p class="text-xs text-center mt-3 opacity-60">
+    Sem spam. Seus dados estão seguros.
+  </p>
+</form>
+
+<style>
+  .lead-input {
+    border-color: #e2e8f0;
+    background-color: #ffffff;
+    color: var(--brand-text);
+  }
+  .lead-input:focus {
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-secondary) 20%, transparent);
+  }
+  .lead-submit {
+    background: var(--brand-gradient);
+  }
+  .lead-submit:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+</style>

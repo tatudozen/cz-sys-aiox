@@ -1,0 +1,29 @@
+---
+/**
+ * CopyZen demo client — Retenção page
+ * Story 5.1 — AC-5: Multi-client build output
+ */
+import Retencao from '../../../templates/retencao.astro';
+
+const brand = {
+  primary_color: '#08164a',
+  secondary_color: '#38bafc',
+  accent_color: '#38bafc',
+  background_color: '#ffffff',
+  text_color: '#1a202c',
+  heading_font: 'Montserrat',
+  body_font: 'Open Sans',
+};
+---
+
+<Retencao
+  clientSlug="copyzen"
+  brand={brand}
+  companyName="CopyZen"
+  leadName="você"
+  headline="Bem-vindo ao Conteúdo Exclusivo CopyZen"
+  subheadline="Você deu o primeiro passo. Agora vamos aprofundar sua estratégia de marketing."
+  mainContent="Aqui você encontra conteúdo exclusivo sobre copywriting, marketing de atração e estratégias de conversão — preparado especialmente para o seu negócio."
+  referralUrl="/copyzen/compartilhar/"
+  transformacaoUrl="/copyzen/transformacao/"
+/>

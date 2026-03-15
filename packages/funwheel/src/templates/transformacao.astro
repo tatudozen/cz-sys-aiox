@@ -1,0 +1,150 @@
+---
+/**
+ * Transformação — FunWheel Stage T (VIP — unlocked after 3+ referrals)
+ * Story 5.1 — AC-1, AC-4
+ * The final stage of the A-R-T funnel. Premium content for VIP leads.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import CTA from '../components/CTA.astro';
+import LeadForm from '../components/LeadForm.astro';
+import Footer from '../components/Footer.astro';
+import type { BrandThemeInput } from '../lib/theme';
+
+interface Props {
+  clientSlug?: string;
+  brand?: BrandThemeInput;
+  companyName?: string;
+  leadName?: string;
+  headline?: string;
+  subheadline?: string;
+  offerTitle?: string;
+  offerDescription?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  consultationFormUrl?: string;
+}
+
+const {
+  clientSlug = 'copyzen',
+  brand,
+  companyName = 'CopyZen',
+  leadName = 'você',
+  headline = `Parabéns, ${leadName}! Você é VIP.`,
+  subheadline = 'Você desbloqueou acesso exclusivo ao conteúdo de Transformação.',
+  offerTitle = 'Sua Oferta Exclusiva VIP',
+  offerDescription = 'Como um membro VIP, você tem acesso privilegiado às nossas melhores estratégias e uma consultoria personalizada.',
+  ctaLabel = 'Quero Transformar Meu Negócio →',
+  ctaUrl = '#oferta',
+  consultationFormUrl = '/api/consultations',
+} = Astro.props;
+---
+
+<BaseLayout
+  title={`${companyName} — Acesso VIP`}
+  description={subheadline}
+  brand={brand}
+>
+  <!-- VIP Hero -->
+  <Hero
+    headline={headline}
+    subheadline={subheadline}
+    gradientBg={true}
+  >
+    <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <span class="vip-badge px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wider">
+        🏆 Membro VIP
+      </span>
+    </div>
+  </Hero>
+
+  <!-- VIP Benefits -->
+  <Section
+    title="Seus Benefícios Exclusivos"
+    subtitle="Como VIP, você tem acesso a recursos que não estão disponíveis para o público geral."
+    background="light"
+  >
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6" role="list">
+      {[
+        { icon: '🎓', title: 'Masterclass Exclusiva', desc: 'Acesso completo à masterclass avançada com módulos premium.' },
+        { icon: '📞', title: 'Consultoria 1:1', desc: 'Uma sessão de consultoria personalizada com nosso time.' },
+        { icon: '📊', title: 'Relatórios Avançados', desc: 'Análise aprofundada do seu negócio e oportunidades de crescimento.' },
+        { icon: '🤝', title: 'Comunidade VIP', desc: 'Acesso ao grupo exclusivo de membros VIP para networking.' },
+      ].map(benefit => (
+        <li class="benefit-card rounded-xl p-5 border flex gap-4">
+          <span class="text-2xl flex-shrink-0" aria-hidden="true">{benefit.icon}</span>
+          <div>
+            <h3 class="font-bold text-base mb-1">{benefit.title}</h3>
+            <p class="text-sm opacity-70">{benefit.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- Exclusive Offer -->
+  <Section
+    id="oferta"
+    title={offerTitle}
+    subtitle={offerDescription}
+    background="white"
+    centered={true}
+  >
+    <div class="mt-8 max-w-lg mx-auto">
+      <div class="offer-card rounded-2xl p-8 text-white text-center">
+        <div class="text-4xl mb-4" aria-hidden="true">🚀</div>
+        <h3 class="text-2xl font-bold mb-2">Programa de Transformação</h3>
+        <p class="opacity-80 mb-6 text-base">
+          3 meses de acompanhamento intensivo, estratégias customizadas e suporte dedicado para transformar seu negócio.
+        </p>
+        <CTA
+          label={ctaLabel}
+          href={ctaUrl}
+          variant="secondary"
+          size="lg"
+          fullWidth={true}
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- Consultation Form -->
+  <Section
+    title="Agendar Consultoria Gratuita"
+    subtitle="Preencha abaixo para reservar seu horário."
+    background="light"
+    centered={true}
+  >
+    <div class="mt-6">
+      <LeadForm
+        actionUrl={consultationFormUrl}
+        showName={true}
+        showPhone={true}
+        submitLabel="Agendar Minha Consultoria →"
+        hiddenFields={{ client_slug: clientSlug, page: 'transformacao', tier: 'vip' }}
+      />
+    </div>
+  </Section>
+
+  <Footer companyName={companyName} />
+</BaseLayout>
+
+<style>
+  .vip-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+  .benefit-card {
+    border-color: #e2e8f0;
+    background: #ffffff;
+    transition: box-shadow 0.2s;
+  }
+  .benefit-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  .offer-card {
+    background: var(--brand-gradient);
+  }
+</style>

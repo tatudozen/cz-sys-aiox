@@ -1,0 +1,61 @@
+---
+/**
+ * BaseLayout — FunWheel Brand-Aware Layout
+ * Story 5.1 — AC-1, AC-2, AC-4
+ * Injects brand CSS custom properties at build time.
+ */
+import '../styles/global.css';
+import { generateThemeCSS, DEFAULT_THEME } from '../lib/theme';
+import type { BrandThemeInput } from '../lib/theme';
+
+interface Props {
+  title: string;
+  description?: string;
+  brand?: BrandThemeInput;
+  canonicalUrl?: string;
+}
+
+const {
+  title,
+  description = 'FunWheel — Plataforma de Marketing Inteligente',
+  brand = DEFAULT_THEME,
+  canonicalUrl,
+} = Astro.props;
+
+const { cssVariables, fontImportUrl } = generateThemeCSS(brand);
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <!-- Google Fonts (brand typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href={fontImportUrl} />
+
+    <!-- Brand CSS Custom Properties -->
+    <style set:html={cssVariables} />
+
+    <!-- Base brand styles -->
+    <style>
+      body {
+        font-family: var(--brand-body-font);
+        color: var(--brand-text);
+        background-color: var(--brand-bg);
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: var(--brand-heading-font);
+        color: var(--brand-text);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <slot />
+  </body>
+</html>

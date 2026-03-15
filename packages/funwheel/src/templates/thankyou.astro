@@ -1,0 +1,123 @@
+---
+/**
+ * ThankYou — Post-form submission confirmation page
+ * Story 5.1 — AC-1, AC-4
+ * Shown after lead form submission. Redirects to Retenção.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import CTA from '../components/CTA.astro';
+import Footer from '../components/Footer.astro';
+import type { BrandThemeInput } from '../lib/theme';
+
+interface Props {
+  clientSlug?: string;
+  brand?: BrandThemeInput;
+  companyName?: string;
+  leadName?: string;
+  headline?: string;
+  subheadline?: string;
+  retencaoUrl?: string;
+  /** Auto-redirect delay in seconds (0 = no redirect) */
+  autoRedirectSeconds?: number;
+}
+
+const {
+  clientSlug = 'copyzen',
+  brand,
+  companyName = 'CopyZen',
+  leadName = 'você',
+  headline = `Obrigado, ${leadName}!`,
+  subheadline = 'Seu cadastro foi confirmado. Acesse agora o conteúdo exclusivo.',
+  retencaoUrl = '../retencao/',
+  autoRedirectSeconds = 5,
+} = Astro.props;
+---
+
+<BaseLayout
+  title={`${companyName} — Obrigado!`}
+  description={subheadline}
+  brand={brand}
+>
+  {autoRedirectSeconds > 0 && (
+    <meta http-equiv="refresh" content={`${autoRedirectSeconds};url=${retencaoUrl}`} />
+  )}
+
+  <!-- Thank You Hero -->
+  <Hero
+    headline={headline}
+    subheadline={subheadline}
+    gradientBg={true}
+  >
+    <div class="mt-6">
+      <div class="success-checkmark inline-flex items-center justify-center w-16 h-16 rounded-full bg-white mb-4" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="checkmark-icon">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+    </div>
+  </Hero>
+
+  <!-- Next Steps -->
+  <Section
+    title="O que acontece agora?"
+    background="light"
+    centered={true}
+  >
+    <ol class="flex flex-col gap-4 mt-6 max-w-lg mx-auto text-left" role="list">
+      <li class="flex items-start gap-4">
+        <span class="step-number flex-shrink-0 w-8 h-8 rounded-full font-bold text-sm flex items-center justify-center">1</span>
+        <div>
+          <h3 class="font-semibold mb-1">Confirmação no e-mail</h3>
+          <p class="text-sm opacity-70">Verifique sua caixa de entrada. Em breve você receberá um e-mail de boas-vindas.</p>
+        </div>
+      </li>
+      <li class="flex items-start gap-4">
+        <span class="step-number flex-shrink-0 w-8 h-8 rounded-full font-bold text-sm flex items-center justify-center">2</span>
+        <div>
+          <h3 class="font-semibold mb-1">Acesse o conteúdo exclusivo</h3>
+          <p class="text-sm opacity-70">Clique no botão abaixo para acessar o conteúdo preparado especialmente para você.</p>
+        </div>
+      </li>
+      <li class="flex items-start gap-4">
+        <span class="step-number flex-shrink-0 w-8 h-8 rounded-full font-bold text-sm flex items-center justify-center">3</span>
+        <div>
+          <h3 class="font-semibold mb-1">Indique amigos</h3>
+          <p class="text-sm opacity-70">Compartilhe com amigos para desbloquear conteúdo VIP adicional.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+      <CTA
+        label="Acessar Conteúdo Exclusivo →"
+        href={retencaoUrl}
+        variant="primary"
+        size="lg"
+      />
+    </div>
+
+    {autoRedirectSeconds > 0 && (
+      <p class="text-sm opacity-50 mt-4">
+        Redirecionando automaticamente em {autoRedirectSeconds} segundos...
+      </p>
+    )}
+  </Section>
+
+  <Footer companyName={companyName} />
+</BaseLayout>
+
+<style>
+  .success-checkmark {
+    color: var(--brand-primary);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+  }
+  .checkmark-icon {
+    color: var(--brand-primary);
+  }
+  .step-number {
+    background: color-mix(in srgb, var(--brand-secondary) 15%, transparent);
+    color: var(--brand-primary);
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+/**
+ * CopyZen demo client — Transformação page
+ * Story 5.1 — AC-5: Multi-client build output
+ */
+import Transformacao from '../../../templates/transformacao.astro';
+
+const brand = {
+  primary_color: '#08164a',
+  secondary_color: '#38bafc',
+  accent_color: '#38bafc',
+  background_color: '#ffffff',
+  text_color: '#1a202c',
+  heading_font: 'Montserrat',
+  body_font: 'Open Sans',
+};
+---
+
+<Transformacao
+  clientSlug="copyzen"
+  brand={brand}
+  companyName="CopyZen"
+  offerTitle="Programa CopyZen VIP"
+  offerDescription="3 meses de acompanhamento intensivo com copywriting assistido por IA, estratégias de conversão e suporte dedicado."
+  ctaLabel="Quero o Programa VIP →"
+  consultationFormUrl="/api/consultations"
+/>

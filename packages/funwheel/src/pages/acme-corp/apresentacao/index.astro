@@ -1,0 +1,28 @@
+---
+/**
+ * Acme Corp demo client — Apresentação page
+ * Story 5.1 — AC-5, AC-8: Second client with distinct brand = visually distinct output
+ */
+import Apresentacao from '../../../templates/apresentacao.astro';
+
+const brand = {
+  primary_color: '#7c3aed',
+  secondary_color: '#f59e0b',
+  accent_color: '#f59e0b',
+  background_color: '#fafaf9',
+  text_color: '#1c1917',
+  heading_font: 'Playfair Display',
+  body_font: 'Lato',
+};
+---
+
+<Apresentacao
+  clientSlug="acme-corp"
+  brand={brand}
+  companyName="Acme Corp"
+  headline="Transforme seu Negócio com Acme"
+  subheadline="Estratégias comprovadas para crescimento sustentável"
+  valueProposition="A Acme Corp oferece soluções inovadoras para empresas que buscam crescimento acelerado e resultados duradouros no mercado digital."
+  formActionUrl="/api/leads"
+  retencaoUrl="/acme-corp/retencao/"
+/>

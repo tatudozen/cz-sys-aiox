@@ -1,0 +1,135 @@
+---
+/**
+ * Retenção — FunWheel Stage R (unlocked after lead submits form)
+ * Story 5.1 — AC-1, AC-4
+ * Deeper content engagement. Encourages referral sharing to unlock Transformação.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import CTA from '../components/CTA.astro';
+import Footer from '../components/Footer.astro';
+import type { BrandThemeInput } from '../lib/theme';
+
+interface Props {
+  clientSlug?: string;
+  brand?: BrandThemeInput;
+  companyName?: string;
+  leadName?: string;
+  headline?: string;
+  subheadline?: string;
+  mainContent?: string;
+  referralUrl?: string;
+  transformacaoUrl?: string;
+}
+
+const {
+  clientSlug = 'copyzen',
+  brand,
+  companyName = 'CopyZen',
+  leadName = 'você',
+  headline = `Bem-vindo, ${leadName}!`,
+  subheadline = 'Você deu o primeiro passo. Agora vamos aprofundar.',
+  mainContent = 'Aqui você encontra conteúdo exclusivo preparado especialmente para a sua jornada. Cada etapa foi desenhada para trazer mais valor e resultados concretos.',
+  referralUrl = '#compartilhar',
+  transformacaoUrl = '../transformacao/',
+} = Astro.props;
+
+const referralsNeeded = 3;
+---
+
+<BaseLayout
+  title={`${companyName} — Conteúdo Exclusivo`}
+  description={subheadline}
+  brand={brand}
+>
+  <!-- Hero -->
+  <Hero
+    headline={headline}
+    subheadline={subheadline}
+    gradientBg={true}
+  />
+
+  <!-- Exclusive Content -->
+  <Section
+    title="Seu Conteúdo Exclusivo"
+    subtitle={mainContent}
+    background="white"
+  >
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+      <article class="content-card rounded-xl p-6 border">
+        <span class="text-2xl mb-3 block" aria-hidden="true">📚</span>
+        <h3 class="font-bold text-lg mb-2">Módulo 1: Fundamentos</h3>
+        <p class="text-sm opacity-70 mb-4">Entenda as bases da metodologia e como ela se aplica ao seu negócio.</p>
+        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-available">Disponível</span>
+      </article>
+
+      <article class="content-card rounded-xl p-6 border">
+        <span class="text-2xl mb-3 block" aria-hidden="true">🎯</span>
+        <h3 class="font-bold text-lg mb-2">Módulo 2: Estratégia</h3>
+        <p class="text-sm opacity-70 mb-4">Planejamento e execução de campanhas com foco em resultados mensuráveis.</p>
+        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-available">Disponível</span>
+      </article>
+
+      <article class="content-card rounded-xl p-6 border">
+        <span class="text-2xl mb-3 block" aria-hidden="true">🔒</span>
+        <h3 class="font-bold text-lg mb-2">Módulo 3: Avançado (VIP)</h3>
+        <p class="text-sm opacity-70 mb-4">Acesso desbloqueado após {referralsNeeded} indicações de amigos.</p>
+        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-locked">Bloqueado</span>
+      </article>
+
+      <article class="content-card rounded-xl p-6 border locked-card">
+        <span class="text-2xl mb-3 block" aria-hidden="true">🏆</span>
+        <h3 class="font-bold text-lg mb-2">Transformação (VIP)</h3>
+        <p class="text-sm opacity-70 mb-4">A etapa final — acesso VIP exclusivo para quem indicou {referralsNeeded} amigos.</p>
+        <a href={transformacaoUrl} class="inline-block text-xs font-semibold px-3 py-1 rounded-full badge-locked">
+          Desbloqueie →
+        </a>
+      </article>
+    </div>
+  </Section>
+
+  <!-- Referral CTA -->
+  <Section
+    title="Indique Amigos, Desbloqueie Mais"
+    subtitle={`Compartilhe com ${referralsNeeded} amigos para desbloquear o conteúdo VIP de Transformação.`}
+    background="brand"
+    centered={true}
+  >
+    <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <CTA
+        label="Compartilhar agora →"
+        href={referralUrl}
+        variant="secondary"
+        size="lg"
+      />
+      <p class="text-sm text-white opacity-80">
+        0 de {referralsNeeded} indicações realizadas
+      </p>
+    </div>
+  </Section>
+
+  <Footer companyName={companyName} />
+</BaseLayout>
+
+<style>
+  .content-card {
+    border-color: #e2e8f0;
+    background: #ffffff;
+    transition: box-shadow 0.2s;
+  }
+  .content-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  .locked-card {
+    opacity: 0.7;
+  }
+  .badge-available {
+    background: color-mix(in srgb, var(--brand-secondary) 15%, transparent);
+    color: var(--brand-primary);
+  }
+  .badge-locked {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+</style>

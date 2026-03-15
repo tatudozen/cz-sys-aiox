@@ -1,0 +1,122 @@
+---
+/**
+ * Apresentação — FunWheel Stage A (always visible, no gate)
+ * Story 5.1 — AC-1, AC-4
+ * The first page in the A-R-T funnel. Captures lead and routes to Retenção.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import LeadForm from '../components/LeadForm.astro';
+import Footer from '../components/Footer.astro';
+import type { BrandThemeInput } from '../lib/theme';
+
+interface Props {
+  /** Client slug for multi-client builds */
+  clientSlug?: string;
+  /** Brand config for theming */
+  brand?: BrandThemeInput;
+  companyName?: string;
+  headline?: string;
+  subheadline?: string;
+  /** Intro/value proposition text */
+  valueProposition?: string;
+  formActionUrl?: string;
+  retencaoUrl?: string;
+}
+
+const {
+  clientSlug = 'copyzen',
+  brand,
+  companyName = 'CopyZen',
+  headline = 'Descubra o Poder da Transformação',
+  subheadline = 'Seu Guia de 3 Passos para o Sucesso',
+  valueProposition = 'Atraia, retenha e transforme seus leads com estratégias de marketing inteligentes.',
+  formActionUrl = '/api/leads',
+  retencaoUrl = '../retencao/',
+} = Astro.props;
+---
+
+<BaseLayout
+  title={`${companyName} — Bem-vindo`}
+  description={subheadline}
+  brand={brand}
+>
+  <!-- Hero Section -->
+  <Hero
+    headline={headline}
+    subheadline={subheadline}
+    gradientBg={true}
+  >
+    <div class="mt-8">
+      <a
+        href="#cadastro"
+        class="inline-flex items-center gap-2 bg-white font-semibold px-8 py-4 rounded-xl text-lg transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 shadow-lg cta-hero"
+      >
+        Quero Participar →
+      </a>
+    </div>
+  </Hero>
+
+  <!-- Value Proposition -->
+  <Section
+    title="Por que participar?"
+    subtitle={valueProposition}
+    background="light"
+    centered={true}
+  >
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+      <div class="flex flex-col items-center text-center p-4">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 feature-icon" aria-hidden="true">
+          <span class="text-2xl">✨</span>
+        </div>
+        <h3 class="font-semibold text-base mb-2">Estratégia Comprovada</h3>
+        <p class="text-sm opacity-70">Metodologia A-R-T para maximizar conversões em cada etapa do funil.</p>
+      </div>
+      <div class="flex flex-col items-center text-center p-4">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 feature-icon" aria-hidden="true">
+          <span class="text-2xl">🎯</span>
+        </div>
+        <h3 class="font-semibold text-base mb-2">Personalizado para Você</h3>
+        <p class="text-sm opacity-70">Conteúdo adaptado ao perfil e necessidades da sua empresa.</p>
+      </div>
+      <div class="flex flex-col items-center text-center p-4">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 feature-icon" aria-hidden="true">
+          <span class="text-2xl">📈</span>
+        </div>
+        <h3 class="font-semibold text-base mb-2">Resultados Reais</h3>
+        <p class="text-sm opacity-70">Métricas claras e acompanhamento de cada etapa da jornada.</p>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Lead Form -->
+  <Section
+    title="Comece Agora — É Gratuito"
+    subtitle="Cadastre-se e receba acesso ao conteúdo exclusivo."
+    background="white"
+    centered={true}
+  >
+    <div id="cadastro" class="mt-6">
+      <LeadForm
+        actionUrl={formActionUrl}
+        showName={true}
+        showPhone={false}
+        submitLabel="Quero Participar →"
+        hiddenFields={{ client_slug: clientSlug, page: 'apresentacao' }}
+      />
+    </div>
+  </Section>
+
+  <Footer companyName={companyName} />
+</BaseLayout>
+
+<style>
+  .cta-hero {
+    color: var(--brand-primary);
+  }
+  .feature-icon {
+    background: color-mix(in srgb, var(--brand-secondary) 15%, transparent);
+    color: var(--brand-primary);
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+/**
+ * Section — Brand-aware content section
+ * Story 5.1 — AC-3
+ */
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  background?: 'white' | 'light' | 'brand' | 'dark';
+  centered?: boolean;
+}
+
+const {
+  title,
+  subtitle,
+  background = 'white',
+  centered = false,
+} = Astro.props;
+
+const bgClass: Record<string, string> = {
+  white: 'bg-white',
+  light: 'section-bg-light',
+  brand: 'section-bg-brand text-white',
+  dark: 'section-bg-dark text-white',
+};
+---
+
+<section
+  class:list={[
+    'w-full px-4 sm:px-8 py-12 sm:py-16 lg:py-20',
+    bgClass[background] ?? 'bg-white',
+  ]}
+>
+  <div class:list={['max-w-4xl mx-auto', centered ? 'text-center' : '']}>
+    {title && (
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
+        {title}
+      </h2>
+    )}
+    {subtitle && (
+      <p class="text-base sm:text-lg leading-relaxed mb-8 max-w-2xl opacity-80" class:list={[centered ? 'mx-auto' : '']}>
+        {subtitle}
+      </p>
+    )}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section-bg-light {
+    background-color: #f8f9fa;
+  }
+  .section-bg-brand {
+    background: var(--brand-gradient);
+  }
+  .section-bg-dark {
+    background: var(--brand-gradient-dark);
+  }
+</style>
