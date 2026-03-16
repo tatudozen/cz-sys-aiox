@@ -2,13 +2,16 @@
 /**
  * Sales Page — Data-driven entry point
  * Story 6.3 — AC-1: Renders from client-content.json (written by scripts/build.ts)
+ * Story 7.4 — AC-2/AC-3: CTA URL from PUBLIC_CTA_URL env var (WhatsApp or GHL)
  * Default: demo content (copyzen). Override: build script fetches from Supabase.
  */
 import SalesPage from '../templates/sales-page.astro';
 import { mapContentToProps } from '../lib/map-content';
 import contentData from '../data/client-content.json';
 
-const props = mapContentToProps(contentData as any);
+// AC-3: CTA URL — env var takes precedence (set at deploy time via GitHub Secret)
+const ctaUrl = import.meta.env.PUBLIC_CTA_URL ?? (contentData as any).cta_url ?? '#oferta';
+const props = mapContentToProps(contentData as any, ctaUrl);
 ---
 
 <SalesPage {...props} />

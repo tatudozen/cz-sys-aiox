@@ -10,6 +10,7 @@ export interface SalesContentData {
   client_slug: string;
   title?: string;
   description?: string;
+  cta_url?: string | null;
   brand?: {
     primary_color?: string;
     secondary_color?: string;
@@ -39,13 +40,17 @@ function parseDays(duration: string): number {
 }
 
 /** Map SalesContentData → flat SalesPage template props */
-export function mapContentToProps(data: SalesContentData) {
-  const { sections, title, description, brand } = data;
+export function mapContentToProps(data: SalesContentData, ctaUrlOverride?: string) {
+  const { sections, title, description, brand, cta_url } = data;
+  const resolvedCtaUrl = ctaUrlOverride ?? cta_url ?? '#oferta';
 
   return {
     title: title ?? sections.hero.headline,
     description: description ?? sections.problem.text.slice(0, 160),
     brand: brand ?? {},
+    primaryCtaUrl: resolvedCtaUrl,
+    offerCtaUrl: resolvedCtaUrl,
+    finalCtaUrl: resolvedCtaUrl,
 
     // Hero
     heroHeadline: sections.hero.headline,

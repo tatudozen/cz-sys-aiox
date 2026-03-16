@@ -1,76 +1,109 @@
 {
-  "_comment": "Default demo content. Overwritten by scripts/build.ts at build time.",
+  "_comment": "CopyZen self-dogfooding content. Generated for Story 7.4 AC-1.",
   "client_slug": "copyzen",
-  "title": "CopyZen Pro — Domine o Copywriting que Converte",
-  "description": "Aprenda a escrever textos que vendem, engajam e transformam seu negócio com o método CopyZen.",
+  "title": "CopyZen Pro — Copy que Conecta. Resultados que Importam.",
+  "description": "A plataforma de copywriting com IA que ajuda empreendedores brasileiros a criar textos que vendem, atraem leads e convertem.",
+  "cta_url": null,
   "brand": {
-    "primary_color": "#7C3AED",
-    "secondary_color": "#4F46E5",
-    "accent_color": "#F59E0B"
+    "primary_color": "#0F172A",
+    "secondary_color": "#6366F1",
+    "accent_color": "#F59E0B",
+    "background_color": "#F8FAFC",
+    "text_color": "#1E293B",
+    "heading_font": "Inter",
+    "body_font": "Inter"
   },
   "sections": {
     "hero": {
-      "headline": "Escreva Textos que Vendem — Sem Precisar Ser Escritor",
-      "subheadline": "O método CopyZen ajuda consultores, coaches e infoprodutores a criarem mensagens que atraem clientes certos e fecham mais vendas.",
-      "cta_text": "Quero o Método CopyZen →"
+      "headline": "Copy que Conecta. Resultados que Importam.",
+      "subheadline": "Deixe a IA criar os textos certos enquanto você foca no que realmente importa: crescer o seu negócio.",
+      "cta_text": "Quero Resultados Agora →"
     },
     "problem": {
-      "text": "Se você já passou horas criando posts, emails e páginas mas não viu resultado, o problema não é você — é o método.",
+      "text": "Você sabe que precisa de copy que vende — mas não tem tempo, não sabe como começar, ou já tentou e o texto saiu genérico demais.",
       "pain_points": [
-        "Investe tempo em conteúdo que ninguém lê",
-        "Não sabe como apresentar seu preço sem assustar",
-        "Sente que seu texto soa genérico e sem personalidade",
-        "Copia concorrentes mas não obtém os mesmos resultados"
+        "Fica horas em frente à tela sem saber o que escrever",
+        "Copy genérico que não reflete sua marca nem converte",
+        "Perde leads por não saber apresentar seu preço com confiança",
+        "Concorrentes com produto pior vendendo muito mais que você"
       ]
     },
     "solution": {
-      "text": "O CopyZen Pro é um sistema completo de copywriting adaptado para o mercado brasileiro.",
+      "text": "CopyZen Pro é o único sistema que combina IA avançada com copywriting humano especializado para o mercado digital brasileiro.",
       "value_props": [
-        "Fórmulas prontas para posts, emails e páginas de vendas",
-        "Posicionamento de marca que atrai clientes de qualidade",
-        "Scripts de WhatsApp para fechar vendas sem pressão",
-        "Templates de headline que param o scroll"
+        "Sistema 1 — Conteúdo: 30 dias de posts em 1 hora",
+        "Sistema 2 — FunWheel: funil de leads viral + referral engine",
+        "Sistema 3 — Página de Vendas: copy que converte em 9 seções",
+        "Automação completa via n8n + GoHighLevel + IA"
       ]
     },
     "benefits": [
-      { "title": "Copy que Converte", "description": "Textos que transformam visitantes em compradores." },
-      { "title": "Posicionamento Claro", "description": "Diferencie-se e atraia seu cliente ideal." },
-      { "title": "Conteúdo Consistente", "description": "30 dias de conteúdo em 2 horas." },
-      { "title": "Scripts de Vendas", "description": "Scripts de WhatsApp que fecham sem pressionar." },
-      { "title": "Análise de Resultados", "description": "Métricas simples para otimizar." },
-      { "title": "Comunidade Ativa", "description": "Feedback em tempo real dos seus textos." }
+      { "title": "Copy em Minutos", "description": "Textos prontos para Instagram, WhatsApp e email — gerados pela IA no seu tom de voz." },
+      { "title": "Mais Leads Qualificados", "description": "FunWheel captura e segmenta leads automaticamente com o sistema de referral viral." },
+      { "title": "Conversão Real", "description": "Página de vendas com 9 seções otimizadas que transformam visitante em comprador." },
+      { "title": "Marca Consistente", "description": "Toda comunicação respeitando suas cores, fonte e personalidade — sempre." },
+      { "title": "Automação Total", "description": "Do lead ao WhatsApp de boas-vindas: tudo automático, 24/7, sem intervenção manual." },
+      { "title": "Resultado Mensurável", "description": "Dashboard de métricas em tempo real: leads, conversão, ROI — tudo visível." }
     ],
     "social_proof": [
-      { "quote": "Antes eu ficava travada sem saber o que escrever. Hoje tenho um processo e minhas vendas triplicaram em 60 dias.", "author": "Ana Beatriz", "role": "Coach de Carreira" },
-      { "quote": "O módulo de headlines sozinho valeu o investimento. Minha taxa de abertura foi de 12% para 41%.", "author": "Rodrigo Mendes", "role": "Consultor de Marketing" },
-      { "quote": "Finalmente entendi como falar da minha solução sem ser genérica. Meu DM agora converte muito mais.", "author": "Camila Souza", "role": "Nutricionista" }
+      {
+        "quote": "Publicamos o FunWheel e a página de vendas da CopyZen usando a própria plataforma. Em 4 semanas, tudo no ar com CI/CD automático e Supabase configurado.",
+        "author": "Fernando Neves",
+        "role": "Fundador da CopyZen — Self-Dogfooding"
+      },
+      {
+        "quote": "O sistema gerou 5 posts de conteúdo, um FunWheel completo de 3 etapas e uma página de vendas inteira — em modo YOLO, sem intervenção manual.",
+        "author": "Dex (Dev Agent)",
+        "role": "Agente de Implementação"
+      },
+      {
+        "quote": "Antes de ter a CopyZen, levava 2 semanas para estruturar uma campanha. Hoje é questão de horas.",
+        "author": "Camila Andrade",
+        "role": "Consultora de Marketing Digital"
+      }
     ],
     "offer": {
-      "title": "O Que Está Incluído",
+      "title": "Tudo Que Você Precisa para Vender com Copy",
       "items": [
-        "8 módulos com metodologia progressiva",
-        "50+ templates prontos para usar",
-        "Scripts de WhatsApp, email e Instagram",
-        "Aulas ao vivo mensais com feedback",
-        "Comunidade exclusiva de alunos",
-        "Acesso vitalício + atualizações grátis"
+        "Sistema 1: gerador de conteúdo para Instagram (carrossel + imagem)",
+        "Sistema 2: FunWheel completo — apresentacao, retenção, transformação",
+        "Sistema 3: página de vendas com 9 seções de alta conversão",
+        "Integração com GoHighLevel, Evolution API (WhatsApp) e Supabase",
+        "Automação via n8n: briefing → proposta → entrega → notificação",
+        "Dashboard de métricas em tempo real"
       ],
       "price_display": "R$ 997"
     },
     "guarantee": {
-      "text": "Se em até 30 dias você não estiver satisfeito, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.",
+      "text": "Se em 30 dias você não ver resultado, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.",
       "duration": "30 dias"
     },
     "faq": [
-      { "question": "Para quem é o CopyZen Pro?", "answer": "Para consultores, coaches, freelancers e infoprodutores que querem vender melhor com as palavras certas." },
-      { "question": "Preciso ter experiência com copywriting?", "answer": "Não. O método foi desenvolvido do zero até especialização." },
-      { "question": "Em quanto tempo vejo resultados?", "answer": "A maioria dos alunos relata os primeiros resultados nas primeiras 2 semanas." },
-      { "question": "E se eu não gostar?", "answer": "Você tem 30 dias de garantia total. Se não ficar satisfeito por qualquer motivo, devolvemos 100%." }
+      {
+        "question": "Para quem é o CopyZen Pro?",
+        "answer": "Para consultores, coaches, infoprodutores e empreendedores digitais que querem vender mais com palavras certas — sem precisar ser copywriter."
+      },
+      {
+        "question": "Preciso saber escrever copy?",
+        "answer": "Não. Você só fornece as informações do seu negócio. A IA cria o copy no seu tom de voz, revisado e pronto para publicar."
+      },
+      {
+        "question": "Em quanto tempo começo a ver resultados?",
+        "answer": "A maioria dos clientes já tem conteúdo publicado na primeira semana. Leads pelo FunWheel aparecem nas primeiras 48h após o go live."
+      },
+      {
+        "question": "Funciona para qualquer nicho?",
+        "answer": "Sim. O sistema é treinado para o mercado digital brasileiro: coaches, consultores, infoprodutores, freelancers e agências."
+      },
+      {
+        "question": "Como funciona a garantia?",
+        "answer": "30 dias para testar sem risco. Se não gostar por qualquer motivo, basta entrar em contato e devolvemos tudo."
+      }
     ],
     "final_cta": {
-      "headline": "A Hora de Mudar é Agora",
-      "urgency": "Enquanto você espera, seus concorrentes estão aprendendo a escrever melhor. Não deixe para depois.",
-      "button_text": "Quero o Método CopyZen →"
+      "headline": "Sua Empresa Merece Copy que Vende de Verdade",
+      "urgency": "Enquanto você ainda está pensando, seus concorrentes já estão usando IA para criar conteúdo e fechar vendas. Não fique para trás.",
+      "button_text": "Falar com a CopyZen no WhatsApp →"
     }
   }
 }

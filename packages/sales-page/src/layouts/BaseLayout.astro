@@ -155,5 +155,36 @@ const fontsUrl = googleFontsUrl(brand);
 
       window.addEventListener('scroll', onScroll, { passive: true });
     </script>
+
+    <!-- CTA click tracking — Story 7.4 AC-5 -->
+    <script define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL ?? '', supabaseKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '' }}>
+      function trackCtaClick(source) {
+        if (!supabaseUrl || !supabaseKey) return;
+        const payload = {
+          client_id: '00000000-0000-0000-0000-000000000001',
+          project_plan_id: '00000000-0000-0000-0000-000000000015',
+          sections: { cta_click: { source, ts: new Date().toISOString() } },
+          status: 'published',
+          brand_compliant: true,
+        };
+        navigator.sendBeacon(
+          `${supabaseUrl}/rest/v1/sales_page_content`,
+          new Blob(
+            [JSON.stringify(payload)],
+            { type: 'application/json' }
+          )
+        );
+      }
+
+      document.addEventListener('click', function(e) {
+        const target = e.target;
+        if (!(target instanceof HTMLAnchorElement)) return;
+        const isCta =
+          target.classList.contains('sp-btn--primary') ||
+          target.classList.contains('sp-final-btn') ||
+          target.closest('#sp-sticky-cta') !== null;
+        if (isCta) trackCtaClick(target.closest('#sp-sticky-cta') ? 'sticky' : 'inline');
+      });
+    </script>
   </body>
 </html>
