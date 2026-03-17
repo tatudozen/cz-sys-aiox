@@ -93,7 +93,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ briefing_id: $('Code: Extract Briefing Data').item.json.briefing_id, client_id: $('Code: Extract Briefing Data').item.json.client_id, package: $json.analysis.recommended_package, reasoning: $json.analysis.reasoning, timeline: $json.analysis.estimated_timeline, cost_range: $json.analysis.estimated_cost_range, status: $json.analysis.needs_more_info ? 'needs_info' : 'draft' }) }}",
+        "jsonBody": "={{ JSON.stringify({ briefing_id: $('Code: Extract Briefing Data').item.json.briefing_id, client_id: $('Code: Extract Briefing Data').item.json.client_id, package: $json.analysis.recommended_package, reasoning: $json.analysis.reasoning, timeline: $json.analysis.estimated_timeline, cost_range: $json.analysis.estimated_cost_range, status: 'draft' }) }}",
         "options": {}
       },
       "id": "save-proposal",
