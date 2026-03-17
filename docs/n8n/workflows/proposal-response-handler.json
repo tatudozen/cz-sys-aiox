@@ -22,7 +22,7 @@
           "conditions": [
             {
               "id": "is-approved",
-              "leftValue": "={{ $json.query.decision }}",
+              "leftValue": "={{ $json.query?.decision ?? $json.decision ?? '' }}",
               "rightValue": "approved",
               "operator": {"type": "string", "operation": "equals"}
             }
