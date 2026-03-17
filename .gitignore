@@ -38,3 +38,6 @@ Thumbs.db
 
 # Infra stacks (contêm secrets — nunca commitar)
 infra/stacks/
+
+# Firecrawl cache
+.firecrawl/
