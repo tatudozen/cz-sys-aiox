@@ -29,12 +29,11 @@
     {
       "parameters": {
         "conditions": {
-          "conditions": [
+          "string": [
             {
-              "id": "is-approved",
-              "leftValue": "={{ $json.decision }}",
-              "rightValue": "approved",
-              "operator": {"type": "string", "operation": "equals"}
+              "value1": "={{ $json.decision }}",
+              "operation": "equal",
+              "value2": "approved"
             }
           ]
         }
@@ -42,7 +41,7 @@
       "id": "check-decision",
       "name": "IF: Decision Approved?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [680, 300]
     },
     {
