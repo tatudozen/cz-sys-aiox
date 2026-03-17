@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const briefing = $input.item.json[0];\nif (!briefing) throw new Error('Briefing not found: ' + $('Webhook: New Briefing').item.json.body.briefing_id);\n\nconst raw = briefing.raw_data;\nconst hasRequired = raw.nome_negocio && raw.segmento && raw.publico_alvo && raw.objetivo_principal && raw.canal_comunicacao;\n\nreturn [{\n  json: {\n    briefing_id: briefing.id,\n    client_id: briefing.client_id,\n    raw_data: raw,\n    has_required_fields: !!hasRequired\n  }\n}];"
+        "jsCode": "const briefing = $input.item.json;\nif (!briefing) throw new Error('Briefing not found: ' + $('Webhook: New Briefing').item.json.body.briefing_id);\n\nconst raw = briefing.raw_data;\nconst hasRequired = raw.nome_negocio && raw.segmento && raw.publico_alvo && raw.objetivo_principal && raw.canal_comunicacao;\n\nreturn [{\n  json: {\n    briefing_id: briefing.id,\n    client_id: briefing.client_id,\n    raw_data: raw,\n    has_required_fields: !!hasRequired\n  }\n}];"
       },
       "id": "extract-briefing",
       "name": "Code: Extract Briefing Data",
@@ -93,7 +93,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"briefing_id\": \"{{ $('Code: Extract Briefing Data').item.json.briefing_id }}\",\n  \"client_id\": \"{{ $('Code: Extract Briefing Data').item.json.client_id }}\",\n  \"package\": \"{{ $json.analysis.recommended_package }}\",\n  \"reasoning\": {{ JSON.stringify($json.analysis.reasoning) }},\n  \"timeline\": {{ JSON.stringify($json.analysis.estimated_timeline) }},\n  \"cost_range\": {{ JSON.stringify($json.analysis.estimated_cost_range) }},\n  \"status\": \"{{ $json.analysis.needs_more_info ? 'draft' : 'draft' }}\"\n}",
+        "jsonBody": "={{ JSON.stringify({ briefing_id: $('Code: Extract Briefing Data').item.json.briefing_id, client_id: $('Code: Extract Briefing Data').item.json.client_id, package: $json.analysis.recommended_package, reasoning: $json.analysis.reasoning, timeline: $json.analysis.estimated_timeline, cost_range: $json.analysis.estimated_cost_range, status: $json.analysis.needs_more_info ? 'needs_info' : 'draft' }) }}",
         "options": {}
       },
       "id": "save-proposal",
@@ -129,7 +129,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"proposal_id\": \"{{ $('Supabase: Save Proposal').item.json[0].id }}\",\n  \"recommended_package\": \"{{ $('Code: Parse CMO Analysis').item.json.analysis.recommended_package }}\"\n}",
+        "responseBody": "={\n  \"success\": true,\n  \"proposal_id\": \"{{ $('Supabase: Save Proposal').item.json.id }}\",\n  \"recommended_package\": \"{{ $('Code: Parse CMO Analysis').item.json.analysis.recommended_package }}\"\n}",
         "options": {"responseCode": 200}
       },
       "id": "respond-success",

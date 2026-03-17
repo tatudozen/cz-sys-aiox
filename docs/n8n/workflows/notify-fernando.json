@@ -42,7 +42,7 @@
           ]
         },
         "sendBody": true,
-        "bodyContentType": "json",
+        "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ number: $env.FERNANDO_WHATSAPP_NUMBER, textMessage: { text: $json.message } }) }}"
       }
     },
@@ -57,13 +57,13 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
-        "bodyContentType": "json",
+        "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ agent: 'notify-fernando', event: $('Validate & Format Message').item.json.type, status: 'success', metadata: { client: $('Validate & Format Message').item.json.client, sent_at: $('Validate & Format Message').item.json.sent_at } }) }}"
       }
     },

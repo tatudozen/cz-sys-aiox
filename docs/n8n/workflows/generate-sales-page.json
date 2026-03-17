@@ -37,8 +37,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Accept", "value": "application/json" }
           ]
         },
@@ -63,8 +63,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Accept", "value": "application/json" },
             { "name": "Prefer", "value": "count=exact" },
             { "name": "Range", "value": "0-0" }
@@ -106,7 +106,7 @@
           ]
         },
         "sendBody": true,
-        "bodyContentType": "json",
+        "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ brief: $json.brief, brand_config: $json.brand_config }) }}"
       }
     },
@@ -126,7 +126,7 @@
           ]
         },
         "sendBody": true,
-        "bodyContentType": "json",
+        "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ brief: $('Prepare Agent Input').item.json.brief, brand_config: $('Prepare Agent Input').item.json.brand_config, strategy: $('CMO — Build Sales Strategy').item.json, lead_count: $('Prepare Agent Input').item.json.lead_count }) }}"
       }
     },
@@ -141,14 +141,14 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=representation" }
           ]
         },
         "sendBody": true,
-        "bodyContentType": "json",
+        "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ client_id: $('Prepare Agent Input').item.json.client_id, project_plan_id: $('Prepare Agent Input').item.json.project_plan_id, sections: $('Copywriter — Generate Sales Page').item.json, status: 'draft', brand_compliant: $('Copywriter — Generate Sales Page').item.json.metadata?.brand_compliant ?? false, lead_count_snapshot: $('Prepare Agent Input').item.json.lead_count }) }}"
       }
     },
@@ -159,7 +159,7 @@
       "position": [1780, 300],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ status: 'ok', sales_page_content_id: $('Save to sales_page_content').item.json[0]?.id ?? null, brand_compliant: $('Copywriter — Generate Sales Page').item.json.metadata?.brand_compliant ?? false, lead_count: $('Prepare Agent Input').item.json.lead_count }) }}"
+        "responseBody": "={{ JSON.stringify({ status: 'ok', sales_page_content_id: $('Save to sales_page_content').item.json?.id ?? null, brand_compliant: $('Copywriter — Generate Sales Page').item.json.metadata?.brand_compliant ?? false, lead_count: $('Prepare Agent Input').item.json.lead_count }) }}"
       }
     }
   ],

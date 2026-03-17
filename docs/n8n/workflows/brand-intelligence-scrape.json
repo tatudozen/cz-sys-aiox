@@ -123,7 +123,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"tone_detected\": {{ JSON.stringify($json.analysis.tone_detected) }},\n  \"keywords_extracted\": {{ JSON.stringify($json.analysis.keywords_extracted || []) }},\n  \"content_structure\": {{ JSON.stringify($json.analysis.content_structure || {}) }},\n  \"confidence_scores\": {{ JSON.stringify($json.analysis.confidence_scores || {}) }},\n  \"screenshot_url\": {{ JSON.stringify($json.screenshot_url) }},\n  \"status\": \"{{ $json.status }}\"\n}",
+        "jsonBody": "={{ JSON.stringify({ tone_detected: $json.analysis.tone_detected, keywords_extracted: $json.analysis.keywords_extracted || [], content_structure: $json.analysis.content_structure || {}, confidence_scores: $json.analysis.confidence_scores || {}, screenshot_url: $json.screenshot_url, status: $json.status }) }}",
         "options": {}
       },
       "id": "update-record",

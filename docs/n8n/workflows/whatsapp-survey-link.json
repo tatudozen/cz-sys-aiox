@@ -106,7 +106,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": \"{{ $('Code: Extract Phone + Message').item.json.phone }}\",\n  \"direction\": \"inbound\",\n  \"message_type\": \"text\",\n  \"content\": {{ JSON.stringify($('Code: Extract Phone + Message').item.json.messageText) }},\n  \"raw_data\": {{ JSON.stringify($('Webhook: Evolution API Inbound').item.json.body) }}\n}",
+        "jsonBody": "={{ JSON.stringify({ phone: $('Code: Extract Phone + Message').item.json.phone, direction: 'inbound', message_type: 'text', content: $('Code: Extract Phone + Message').item.json.messageText, raw_data: JSON.stringify($('Webhook: Evolution API Inbound').item.json.body) }) }}",
         "options": {}
       },
       "id": "log-inbound",

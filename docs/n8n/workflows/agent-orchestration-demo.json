@@ -11,36 +11,31 @@
       "id": "node-1",
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [240, 300]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "http://copyzen-agents:3001/agents/cmo/analyze-briefing",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {
-          "timeout": 30000
-        },
-        "headers": {
+        "sendHeaders": true,
+        "headerParameters": {
           "parameters": [
-            { "name": "X-Agent-API-Key", "value": "={{$env.AGENT_API_KEY}}" },
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
-        "bodyParametersUi": {
-          "parameter": []
-        },
-        "body": {
-          "mode": "json",
-          "jsonContent": "={ \"briefing\": {{ JSON.stringify($json.briefing) }} }"
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ briefing: $json.briefing }) }}",
+        "options": {
+          "timeout": 30000
         }
       },
       "id": "node-2",
       "name": "CMO Analyze Briefing",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
+      "typeVersion": 4.2,
       "position": [460, 300]
     },
     {
@@ -64,64 +59,66 @@
       "parameters": {
         "method": "POST",
         "url": "http://copyzen-agents:3001/agents/copywriter/generate-post",
-        "headers": {
+        "sendHeaders": true,
+        "headerParameters": {
           "parameters": [
-            { "name": "X-Agent-API-Key", "value": "={{$env.AGENT_API_KEY}}" },
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
-        "body": {
-          "mode": "json",
-          "jsonContent": "={\n  \"brief\": \"Gerar post para o pacote {{ $('CMO Analyze Briefing').item.json.data.recommended_package }} — {{ $('Webhook Trigger').item.json.briefing.nome_negocio }}\",\n  \"brand_config\": {{ JSON.stringify($('Webhook Trigger').item.json.brand_config) }},\n  \"mode\": \"inception\",\n  \"type\": \"image\"\n}"
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ brief: 'Gerar post para o pacote ' + $('CMO Analyze Briefing').item.json.data.recommended_package + ' — ' + $('Webhook Trigger').item.json.briefing.nome_negocio, brand_config: $('Webhook Trigger').item.json.brand_config, mode: 'inception', type: 'image' }) }}",
+        "options": {}
       },
       "id": "node-4",
       "name": "Copywriter Generate Post",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
+      "typeVersion": 4.2,
       "position": [900, 200]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "http://copyzen-agents:3001/agents/cmo/review-output",
-        "headers": {
+        "sendHeaders": true,
+        "headerParameters": {
           "parameters": [
-            { "name": "X-Agent-API-Key", "value": "={{$env.AGENT_API_KEY}}" },
+            { "name": "X-Agent-API-Key", "value": "={{ $env.AGENT_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
-        "body": {
-          "mode": "json",
-          "jsonContent": "={\n  \"output\": {\n    \"agent\": \"copywriter\",\n    \"action\": \"generate_social_content\",\n    \"content\": \"{{ $('Copywriter Generate Post').item.json.data.body }}\",\n    \"client_id\": null,\n    \"created_at\": \"{{ new Date().toISOString() }}\"\n  },\n  \"brand_config\": {{ JSON.stringify($('Webhook Trigger').item.json.brand_config) }}\n}"
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ output: { agent: 'copywriter', action: 'generate_social_content', content: $('Copywriter Generate Post').item.json.data.body, client_id: null, created_at: new Date().toISOString() }, brand_config: $('Webhook Trigger').item.json.brand_config }) }}",
+        "options": {}
       },
       "id": "node-5",
       "name": "CMO Review Output",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
+      "typeVersion": 4.2,
       "position": [1120, 200]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"pipeline_complete\": true,\n  \"cmo_analysis\": {{ JSON.stringify($('CMO Analyze Briefing').item.json.data) }},\n  \"post_copy\": {{ JSON.stringify($('Copywriter Generate Post').item.json.data) }},\n  \"review\": {{ JSON.stringify($('CMO Review Output').item.json.data) }}\n}"
+        "responseBody": "={{ JSON.stringify({ pipeline_complete: true, cmo_analysis: $('CMO Analyze Briefing').item.json.data, post_copy: $('Copywriter Generate Post').item.json.data, review: $('CMO Review Output').item.json.data }) }}"
       },
       "id": "node-6",
       "name": "Return Pipeline Result",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 1.1,
       "position": [1340, 200]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"pipeline_complete\": false,\n  \"reason\": \"Briefing needs more information\",\n  \"missing_info\": {{ JSON.stringify($('CMO Analyze Briefing').item.json.data.missing_info) }}\n}"
+        "responseBody": "={{ JSON.stringify({ pipeline_complete: false, reason: 'Briefing needs more information', missing_info: $('CMO Analyze Briefing').item.json.data.missing_info }) }}"
       },
       "id": "node-7",
       "name": "Request More Info",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 1.1,
       "position": [900, 400]
     }
   ],

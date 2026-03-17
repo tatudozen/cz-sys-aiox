@@ -62,7 +62,7 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings?id=eq.{{ $json[0].briefing_id }}",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings?id=eq.{{ $json.briefing_id }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -89,7 +89,7 @@
         "url": "={{ $env.N8N_WEBHOOK_BASE_URL }}/webhook/dispatch-specific-surveys",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"proposal_id\": \"{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}\", \"briefing_id\": \"{{ $('Supabase: Update → approved').item.json[0].briefing_id }}\", \"package\": \"{{ $('Supabase: Update → approved').item.json[0].package }}\"}",
+        "jsonBody": "={\"proposal_id\": \"{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}\", \"briefing_id\": \"{{ $('Supabase: Update → approved').item.json.briefing_id }}\", \"package\": \"{{ $('Supabase: Update → approved').item.json.package }}\"}",
         "options": {}
       },
       "id": "trigger-surveys",

@@ -37,8 +37,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Accept", "value": "application/json" }
           ]
         },
@@ -80,8 +80,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=representation" }
           ]
@@ -93,11 +93,8 @@
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            { "name": "source_page", "value": "={{ $('Validate Payload').item.json.source_page }}" }
-          ]
-        }
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ source_page: $('Validate Payload').item.json.source_page }) }}"
       }
     },
     {

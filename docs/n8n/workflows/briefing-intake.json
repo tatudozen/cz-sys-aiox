@@ -12,8 +12,130 @@
       "name": "Webhook: GHL Survey",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300],
+      "position": [-608, 80],
       "webhookId": "briefing-intake"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02d86b83-533e-4316-bfa5-60947f1079da",
+              "name": "body.contact_source",
+              "value": "={{ $json.body.contact_source }}",
+              "type": "string"
+            },
+            {
+              "id": "0f7cda53-9ac7-472c-a293-d15c319d2006",
+              "name": "body.first_name",
+              "value": "={{ $json.body.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "df89c9f8-4058-4376-8e72-d608a355e9f8",
+              "name": "body.last_name",
+              "value": "={{ $json.body.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "af0117e3-a5e7-42a6-b996-3d48d4327259",
+              "name": "body.email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "0a8c163e-768c-4835-b1f7-f2a9593a9c61",
+              "name": "body.phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "89c4e96b-7a03-41ae-a240-15b27360bcf5",
+              "name": "body.nome-negocio",
+              "value": "={{ $json.body.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "c1be6784-8573-43c9-85f0-ff28e16c565d",
+              "name": "body.segmento",
+              "value": "={{ $json.body.Segmento }}",
+              "type": "string"
+            },
+            {
+              "id": "4b315b35-3d4c-4d8f-9cb5-7378b868f636",
+              "name": "body.tipo_negocio",
+              "value": "={{ $json.body[\"Tipo de Negócio\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "8946c94b-1fe8-499e-8ad5-447f518e327a",
+              "name": "body.publico_alvo",
+              "value": "={{ $json.body[\"publico-alvo\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "003e94de-283e-47d3-b843-c4c857ee7359",
+              "name": "body.website",
+              "value": "={{ $json.body.website }}",
+              "type": "string"
+            },
+            {
+              "id": "d5413bbf-5057-4531-85e8-0d45db1ad58f",
+              "name": "body.instagram",
+              "value": "={{ $json.body[\"perfil-instagram\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "036950fb-f248-4884-9548-a7034dacc40d",
+              "name": "body.linkedin",
+              "value": "={{ $json.body.LinkedIn }}",
+              "type": "string"
+            },
+            {
+              "id": "6dd82054-e08a-4f3d-9aad-86911863b2b3",
+              "name": "body.youtube",
+              "value": "={{ $json.body[\"youtube-channel\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e7af4edd-8cb0-4b7c-afbe-bf4b45253f84",
+              "name": "body.tiktok",
+              "value": "={{ $json.body.TikTok }}",
+              "type": "string"
+            },
+            {
+              "id": "2879d270-815f-4b82-bc47-44553c6077d0",
+              "name": "body.outros_ativos",
+              "value": "={{ $json.body[\"Outros Ativos Digitais\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "db625428-7ccc-4430-8afd-f36811b2b736",
+              "name": "body.dores",
+              "value": "={{ $json.body.Dores }}",
+              "type": "array"
+            },
+            {
+              "id": "abe0bca8-22f3-47fd-8969-20445195ff99",
+              "name": "body.objetivo_principal",
+              "value": "={{ $json.body[\"Primeiro Objetivo\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c35e0ddf-ca5f-49f0-ac59-f306b23b4d46",
+              "name": "body.algo_mais",
+              "value": "={{ $json.body[\"Algo Mais\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-fields",
+      "name": "Format Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-416, 80]
     },
     {
       "parameters": {
@@ -26,48 +148,33 @@
           "conditions": [
             {
               "id": "check-nome",
-              "leftValue": "={{ $json.body.nome_negocio }}",
+              "leftValue": "={{ $json.body['nome-negocio'] }}",
               "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
+              "operator": { "type": "string", "operation": "notEmpty" }
+            },
+            {
+              "id": "check-email",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
             },
             {
               "id": "check-segmento",
               "leftValue": "={{ $json.body.segmento }}",
               "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
+              "operator": { "type": "string", "operation": "notEmpty" }
             },
             {
               "id": "check-publico",
               "leftValue": "={{ $json.body.publico_alvo }}",
               "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
+              "operator": { "type": "string", "operation": "notEmpty" }
             },
             {
               "id": "check-objetivo",
               "leftValue": "={{ $json.body.objetivo_principal }}",
               "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
-            },
-            {
-              "id": "check-canal",
-              "leftValue": "={{ $json.body.canal_comunicacao }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
+              "operator": { "type": "string", "operation": "notEmpty" }
             }
           ],
           "combinator": "and"
@@ -77,134 +184,156 @@
       "name": "Validate: Required Fields",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [-224, 80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/clients",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $json.body['nome-negocio'], email: $json.body.email, phone: $json.body.phone || null, business_type: $json.body.segmento, status: 'onboarding' }) }}",
+        "options": {}
+      },
+      "id": "supabase-insert-client",
+      "name": "Supabase: INSERT client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 80]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "merge-client-id",
+              "name": "client_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "merge-raw-data",
+              "name": "raw_data",
+              "value": "={{ JSON.stringify($('Format Fields').first().json.body) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-briefing",
+      "name": "Prepare Briefing Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [224, 80]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/briefings",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
-            },
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "Prefer",
-              "value": "return=representation"
-            }
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Prefer", "value": "return=representation" }
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": []
-        },
         "specifyBody": "json",
-        "jsonBody": "={\n  \"client_id\": null,\n  \"raw_data\": {{ JSON.stringify($('Webhook: GHL Survey').item.json.body) }},\n  \"source\": \"ghl_survey\",\n  \"status\": \"received\"\n}",
+        "jsonBody": "={{ JSON.stringify({ client_id: $json.client_id, raw_data: $json.raw_data, source: 'ghl_survey', status: 'received' }) }}",
         "options": {}
       },
-      "id": "supabase-insert",
+      "id": "supabase-insert-briefing",
       "name": "Supabase: INSERT briefing",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 220]
+      "position": [672, 80]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Briefing recebido com sucesso\",\n  \"briefing_id\": \"{{ $json[0].id }}\"\n}",
-        "options": {
-          "responseCode": 201
-        }
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Cliente e briefing criados com sucesso', client_id: $json[0].client_id, briefing_id: $json[0].id }) }}",
+        "options": { "responseCode": 201 }
       },
       "id": "respond-success",
       "name": "Response: Success 201",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [900, 220]
+      "position": [896, 80]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Campos obrigatórios ausentes: nome_negocio, segmento, publico_alvo, objetivo_principal, canal_comunicacao\"\n}",
-        "options": {
-          "responseCode": 400
-        }
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Campos obrigatórios ausentes: nome_negocio, email, segmento, publico_alvo, objetivo_principal\"\n}",
+        "options": { "responseCode": 400 }
       },
       "id": "respond-validation-error",
       "name": "Response: Validation Error 400",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [680, 400]
+      "position": [-224, 280]
     },
     {
       "parameters": {
         "subject": "=🚨 CopyZen: Erro no briefing-intake",
-        "message": "=Erro ao processar briefing de entrada:\n\nPayload: {{ JSON.stringify($('Webhook: GHL Survey').item.json.body, null, 2) }}\n\nErro: {{ $json.error?.message || $json.message || 'Erro desconhecido' }}\n\nTimestamp: {{ new Date().toISOString() }}"
+        "message": "=Erro ao processar briefing:\n\nPayload: {{ JSON.stringify($('Webhook: GHL Survey').item.json.body, null, 2) }}\n\nErro: {{ $json.error?.message || $json.message || 'Erro desconhecido' }}\n\nTimestamp: {{ new Date().toISOString() }}",
+        "options": {}
       },
       "id": "error-notification",
       "name": "Notify: Error Alert",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [900, 520],
+      "position": [224, 300],
       "continueOnFail": true,
-      "notes": "Configure SMTP credentials in n8n credentials. Target: fernando@copyzen.com.br"
+      "notes": "Configure SMTP credentials in n8n. Target: fernando@copyzen.com.br"
     }
   ],
   "connections": {
     "Webhook: GHL Survey": {
       "main": [
-        [
-          {
-            "node": "Validate: Required Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Format Fields", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Fields": {
+      "main": [
+        [{ "node": "Validate: Required Fields", "type": "main", "index": 0 }]
       ]
     },
     "Validate: Required Fields": {
       "main": [
-        [
-          {
-            "node": "Supabase: INSERT briefing",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Response: Validation Error 400",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Supabase: INSERT client", "type": "main", "index": 0 }],
+        [{ "node": "Response: Validation Error 400", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase: INSERT client": {
+      "main": [
+        [{ "node": "Prepare Briefing Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Briefing Data": {
+      "main": [
+        [{ "node": "Supabase: INSERT briefing", "type": "main", "index": 0 }]
       ]
     },
     "Supabase: INSERT briefing": {
       "main": [
-        [
-          {
-            "node": "Response: Success 201",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Response: Success 201", "type": "main", "index": 0 }]
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "saveManualExecutions": true,
@@ -213,18 +342,12 @@
   },
   "staticData": null,
   "meta": {
-    "description": "Receives GHL survey webhook, validates required fields, saves raw briefing to Supabase. Story 2.1.",
-    "templateCredsSetupCompleted": false
+    "description": "Receives GHL survey webhook, formats fields, creates client + briefing in Supabase atomically. Story 2.1.",
+    "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "1.0.0",
   "tags": [
-    {
-      "name": "sistema-0",
-      "createdAt": "2026-03-15"
-    },
-    {
-      "name": "briefing"
-    }
+    { "name": "sistema-0" },
+    { "name": "briefing" }
   ]
 }
