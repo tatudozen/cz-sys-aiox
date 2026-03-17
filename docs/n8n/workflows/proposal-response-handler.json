@@ -18,11 +18,21 @@
     },
     {
       "parameters": {
+        "jsCode": "// Extrai query params com fallback seguro para qualquer versão/modo do n8n\nconst data = $input.item.json;\nconst query = data.query || data.params || {};\nconst proposal_id = query.proposal_id || data.proposal_id || '';\nconst decision = (query.decision || data.decision || '').toLowerCase();\nreturn [{ json: { proposal_id, decision } }];"
+      },
+      "id": "extract-params",
+      "name": "Code: Extract Query Params",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
         "conditions": {
           "conditions": [
             {
               "id": "is-approved",
-              "leftValue": "={{ $json.query?.decision ?? $json.decision ?? '' }}",
+              "leftValue": "={{ $json.decision }}",
               "rightValue": "approved",
               "operator": {"type": "string", "operation": "equals"}
             }
@@ -33,12 +43,12 @@
       "name": "IF: Decision Approved?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [680, 300]
     },
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Code: Extract Query Params').item.json.proposal_id }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -57,7 +67,7 @@
       "name": "Supabase: Update → approved",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 220]
+      "position": [900, 220]
     },
     {
       "parameters": {
@@ -81,7 +91,7 @@
       "name": "Supabase: Update Briefing → approved",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [900, 220]
+      "position": [1120, 220]
     },
     {
       "parameters": {
@@ -89,14 +99,14 @@
         "url": "={{ $env.N8N_WEBHOOK_BASE_URL }}/webhook/dispatch-specific-surveys",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"proposal_id\": \"{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}\", \"briefing_id\": \"{{ $('Supabase: Update → approved').item.json.briefing_id }}\", \"package\": \"{{ $('Supabase: Update → approved').item.json.package }}\"}",
+        "jsonBody": "={{ JSON.stringify({ proposal_id: $('Code: Extract Query Params').item.json.proposal_id, briefing_id: $('Supabase: Update → approved').item.json.briefing_id, package: $('Supabase: Update → approved').item.json.package }) }}",
         "options": {}
       },
       "id": "trigger-surveys",
       "name": "HTTP: Trigger Dispatch Surveys",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1120, 220],
+      "position": [1340, 220],
       "continueOnFail": true,
       "notes": "Triggers Story 2.5 workflow"
     },
@@ -110,12 +120,12 @@
       "name": "Response: Approved HTML",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1340, 220]
+      "position": [1560, 220]
     },
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Webhook: Proposal Response').item.json.query.proposal_id }}",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/proposals?id=eq.{{ $('Code: Extract Query Params').item.json.proposal_id }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -134,7 +144,7 @@
       "name": "Supabase: Update → rejected",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 400]
+      "position": [900, 400]
     },
     {
       "parameters": {
@@ -146,11 +156,12 @@
       "name": "Response: Rejected HTML",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [900, 400]
+      "position": [1120, 400]
     }
   ],
   "connections": {
-    "Webhook: Proposal Response": {"main": [[{"node": "IF: Decision Approved?", "type": "main", "index": 0}]]},
+    "Webhook: Proposal Response": {"main": [[{"node": "Code: Extract Query Params", "type": "main", "index": 0}]]},
+    "Code: Extract Query Params": {"main": [[{"node": "IF: Decision Approved?", "type": "main", "index": 0}]]},
     "IF: Decision Approved?": {
       "main": [
         [{"node": "Supabase: Update → approved", "type": "main", "index": 0}],
