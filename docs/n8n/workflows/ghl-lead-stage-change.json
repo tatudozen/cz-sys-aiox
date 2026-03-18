@@ -20,10 +20,10 @@
       "id": "2",
       "name": "Validate Payload",
       "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
       "position": [460, 300],
       "parameters": {
-        "language": "javaScript",
-        "jsCode": "// Validate incoming GHL webhook payload\nconst body = $input.first().json;\n\nconst contactId = body.contact?.id ?? body.contactId ?? null;\nconst email = body.contact?.email ?? body.email ?? null;\nconst pipelineStage = body.pipeline?.stage ?? body.pipelineStage ?? null;\n\nif (!contactId) {\n  throw new Error('Missing contactId in GHL webhook payload');\n}\n\n// Map GHL pipeline stage name → FunWheel source_page\nconst stageMap = {\n  'retencao': 'retencao',\n  'transformacao': 'transformacao',\n  'vip': 'transformacao',\n  'apresentacao': 'apresentacao',\n  'sales': 'sales_page',\n};\n\nconst lowerStage = (pipelineStage ?? '').toLowerCase();\nconst sourcePage = stageMap[lowerStage] ?? 'retencao';\n\nreturn [{\n  json: {\n    ghl_contact_id: contactId,\n    email,\n    pipeline_stage: pipelineStage,\n    source_page: sourcePage,\n    received_at: new Date().toISOString(),\n  }\n}];"
+        "jsCode": "// Validate incoming GHL webhook payload\nvar body = items[0].json;\n\nvar contactId = (body.contact && body.contact.id) ? body.contact.id : (body.contactId || null);\nvar email = (body.contact && body.contact.email) ? body.contact.email : (body.email || null);\nvar pipelineStage = (body.pipeline && body.pipeline.stage) ? body.pipeline.stage : (body.pipelineStage || null);\n\nif (!contactId) {\n  throw new Error('Missing contactId in GHL webhook payload');\n}\n\n// Map GHL pipeline stage name → FunWheel source_page\nvar stageMap = {\n  'retencao': 'retencao',\n  'transformacao': 'transformacao',\n  'vip': 'transformacao',\n  'apresentacao': 'apresentacao',\n  'sales': 'sales_page'\n};\n\nvar lowerStage = (pipelineStage || '').toLowerCase();\nvar sourcePage = stageMap[lowerStage] || 'retencao';\n\nreturn [{\n  json: {\n    ghl_contact_id: contactId,\n    email: email,\n    pipeline_stage: pipelineStage,\n    source_page: sourcePage,\n    received_at: new Date().toISOString()\n  }\n}];"
       }
     },
     {
@@ -56,6 +56,7 @@
       "id": "4",
       "name": "Lead Found?",
       "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
       "position": [900, 300],
       "parameters": {
         "conditions": {
@@ -101,10 +102,10 @@
       "id": "6",
       "name": "Log Missing Lead",
       "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
       "position": [1120, 420],
       "parameters": {
-        "language": "javaScript",
-        "jsCode": "// Lead not found for this GHL contact — log for investigation\nconst data = $('Validate Payload').item.json;\nconsole.warn('[GHL Stage Change] Lead not found for contact:', data.ghl_contact_id);\nreturn [{ json: { status: 'lead_not_found', ghl_contact_id: data.ghl_contact_id } }];"
+        "jsCode": "// Lead not found for this GHL contact — log for investigation\nvar data = $('Validate Payload').item.json;\nconsole.warn('[GHL Stage Change] Lead not found for contact:', data.ghl_contact_id);\nreturn [{ json: { status: 'lead_not_found', ghl_contact_id: data.ghl_contact_id } }];"
       }
     },
     {

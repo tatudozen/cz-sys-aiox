@@ -43,12 +43,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.item.json.body;\nconst phone = body.data?.key?.remoteJid?.replace('@s.whatsapp.net', '') || '';\nconst messageText = body.data?.message?.conversation || '';\nconst instanceName = body.instance || 'default';\n\nreturn [{\n  json: {\n    phone,\n    messageText,\n    instanceName,\n    messageReceived: messageText,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        "jsCode": "const body = items[0].json.body;\nconst phone = body.data?.key?.remoteJid?.replace('@s.whatsapp.net', '') || '';\nconst messageText = body.data?.message?.conversation || '';\nconst instanceName = body.instance || 'default';\n\nreturn [{\n  json: {\n    phone,\n    messageText,\n    instanceName,\n    messageReceived: messageText,\n    timestamp: new Date().toISOString()\n  }\n}];"
       },
       "id": "extract-data",
       "name": "Code: Extract Phone + Message",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [680, 220]
     },
     {
@@ -70,7 +70,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ $json.phone }}\",\n  \"text\": \"Olá! 👋 Sou o assistente da *CopyZen*!\\n\\nA CopyZen é uma plataforma de marketing inteligente que usa IA para criar conteúdo e estratégias personalizadas para o seu negócio.\\n\\nPara começarmos, preciso entender melhor sobre você. Preencha nosso briefing inicial aqui:\\n\\n👉 {{ $env.GHL_SURVEY_URL }}\\n\\nSão apenas alguns minutos e já poderemos montar uma proposta sob medida para você! 🚀\"\n}",
+        "jsonBody": "={{ JSON.stringify({ number: $json.phone, text: 'Olá! 👋 Sou o assistente da *CopyZen*!\\n\\nA CopyZen é uma plataforma de marketing inteligente que usa IA para criar conteúdo e estratégias personalizadas para o seu negócio.\\n\\nPara começarmos, preciso entender melhor sobre você. Preencha nosso briefing inicial aqui:\\n\\n👉 ' + $env.GHL_SURVEY_URL + '\\n\\nSão apenas alguns minutos e já poderemos montar uma proposta sob medida para você! 🚀' }) }}",
         "options": {}
       },
       "id": "send-whatsapp-reply",
@@ -92,7 +92,7 @@
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -129,7 +129,7 @@
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -143,7 +143,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": \"{{ $('Code: Extract Phone + Message').item.json.phone }}\",\n  \"direction\": \"outbound\",\n  \"message_type\": \"text\",\n  \"content\": \"Survey link sent\",\n  \"raw_data\": {}\n}",
+        "jsonBody": "={{ JSON.stringify({ phone: $('Code: Extract Phone + Message').item.json.phone, direction: 'outbound', message_type: 'text', content: 'Survey link sent', raw_data: {} }) }}",
         "options": {}
       },
       "id": "log-outbound",

@@ -24,7 +24,7 @@
         "headerParameters": {
           "parameters": [
             {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
-            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"}
+            {"name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"}
           ]
         },
         "options": {}
@@ -37,12 +37,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const proposal = $input.item.json[0];\nif (!proposal) throw new Error('Proposal not found');\n\nconst client = proposal.clients || {};\nconst briefing = proposal.briefings || {};\nconst raw = briefing.raw_data || {};\n\nconst approvalUrl = `${$env.N8N_WEBHOOK_BASE_URL}/webhook/proposal-response?proposal_id=${proposal.id}&decision=approved`;\nconst rejectionUrl = `${$env.N8N_WEBHOOK_BASE_URL}/webhook/proposal-response?proposal_id=${proposal.id}&decision=rejected`;\n\nconst packageLabels = {\n  ia: 'IA — Geração de Conteúdo',\n  art: 'A-R-T — FunWheel Completo',\n  e: 'E — Página de Vendas',\n  combo_leads: 'Combo Leads — IA + A-R-T',\n  combo_cash: 'Combo Cash — Funil Completo'\n};\n\nreturn [{\n  json: {\n    proposal_id: proposal.id,\n    briefing_id: proposal.briefing_id,\n    client_name: client.name || raw.nome_negocio || 'Cliente',\n    client_email: client.email || raw.email,\n    client_phone: raw.canal_comunicacao === 'WhatsApp' ? raw.phone : null,\n    package_label: packageLabels[proposal.package] || proposal.package,\n    reasoning: proposal.reasoning,\n    timeline: proposal.timeline,\n    cost_range: proposal.cost_range,\n    approval_url: approvalUrl,\n    rejection_url: rejectionUrl\n  }\n}];"
+        "jsCode": "var proposal = items[0].json[0];\nif (!proposal) throw new Error('Proposal not found');\n\nvar client = proposal.clients || {};\nvar briefing = proposal.briefings || {};\nvar raw = briefing.raw_data || {};\n\nvar approvalUrl = $env.N8N_WEBHOOK_BASE_URL + '/webhook/proposal-response?proposal_id=' + proposal.id + '&decision=approved';\nvar rejectionUrl = $env.N8N_WEBHOOK_BASE_URL + '/webhook/proposal-response?proposal_id=' + proposal.id + '&decision=rejected';\n\nvar packageLabels = {\n  ia: 'IA — Geração de Conteúdo',\n  art: 'A-R-T — FunWheel Completo',\n  e: 'E — Página de Vendas',\n  combo_leads: 'Combo Leads — IA + A-R-T',\n  combo_cash: 'Combo Cash — Funil Completo'\n};\n\nreturn [{\n  json: {\n    proposal_id: proposal.id,\n    briefing_id: proposal.briefing_id,\n    client_name: client.name || raw.nome_negocio || 'Cliente',\n    client_email: client.email || raw.email,\n    client_phone: raw.canal_comunicacao === 'WhatsApp' ? raw.phone : null,\n    package_label: packageLabels[proposal.package] || proposal.package,\n    reasoning: proposal.reasoning,\n    timeline: proposal.timeline,\n    cost_range: proposal.cost_range,\n    approval_url: approvalUrl,\n    rejection_url: rejectionUrl\n  }\n}];"
       },
       "id": "prepare-message",
       "name": "Code: Prepare Proposal Message",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [680, 300]
     },
     {
@@ -58,7 +58,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ $json.client_phone }}\",\n  \"text\": \"Olá, {{ $json.client_name }}! 🎯\\n\\nAnalisamos o briefing do *{{ $json.client_name }}* e temos uma proposta especial para você:\\n\\n📦 *Pacote Recomendado:* {{ $json.package_label }}\\n\\n💡 *Por que este pacote?*\\n{{ $json.reasoning }}\\n\\n⏱️ *Prazo estimado:* {{ $json.timeline }}\\n💰 *Investimento:* {{ $json.cost_range }}\\n\\nPara aprovar: {{ $json.approval_url }}\\nPara recusar: {{ $json.rejection_url }}\\n\\nDúvidas? É só responder esta mensagem! 😊\"\n}",
+        "jsonBody": "={{ JSON.stringify({ number: $json.client_phone, text: 'Olá, ' + $json.client_name + '! 🎯\\n\\nAnalisamos o briefing do *' + $json.client_name + '* e temos uma proposta especial para você:\\n\\n📦 *Pacote Recomendado:* ' + $json.package_label + '\\n\\n💡 *Por que este pacote?*\\n' + $json.reasoning + '\\n\\n⏱️ *Prazo estimado:* ' + $json.timeline + '\\n💰 *Investimento:* ' + $json.cost_range + '\\n\\nPara aprovar: ' + $json.approval_url + '\\nPara recusar: ' + $json.rejection_url + '\\n\\nDúvidas? É só responder esta mensagem! 😊' }) }}",
         "options": {}
       },
       "id": "send-whatsapp",
@@ -76,7 +76,7 @@
         "headerParameters": {
           "parameters": [
             {"name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
-            {"name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"},
+            {"name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"},
             {"name": "Content-Type", "value": "application/json"},
             {"name": "Prefer", "value": "return=minimal"}
           ]
@@ -95,7 +95,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\"success\": true, \"status\": \"sent\", \"proposal_id\": \"{{ $('Code: Prepare Proposal Message').item.json.proposal_id }}\"}",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'sent', proposal_id: $('Code: Prepare Proposal Message').item.json.proposal_id }) }}",
         "options": {"responseCode": 200}
       },
       "id": "respond-ok",

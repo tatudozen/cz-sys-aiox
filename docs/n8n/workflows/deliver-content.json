@@ -17,12 +17,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Create delivery manifest from webhook payload\nconst { project_plan_id, client_id, client_name, client_email, content_outputs } = $input.first().json;\n\nconst date = new Date().toISOString().substring(0, 10); // YYYY-MM-DD\n\nreturn [{\n  json: {\n    project_plan_id,\n    client_id,\n    client_name,\n    client_email,\n    content_outputs,\n    date,\n    root_folder_name: 'CopyZen',\n    client_folder_name: client_name,\n    date_folder_name: date,\n    files_count: content_outputs.length * 2, // image + text per post\n  }\n}];"
+        "jsCode": "// Create delivery manifest from webhook payload\nvar payload = items[0].json;\nvar project_plan_id = payload.project_plan_id;\nvar client_id = payload.client_id;\nvar client_name = payload.client_name;\nvar client_email = payload.client_email;\nvar content_outputs = payload.content_outputs;\n\nvar date = new Date().toISOString().substring(0, 10); // YYYY-MM-DD\n\nreturn [{\n  json: {\n    project_plan_id: project_plan_id,\n    client_id: client_id,\n    client_name: client_name,\n    client_email: client_email,\n    content_outputs: content_outputs,\n    date: date,\n    root_folder_name: 'CopyZen',\n    client_folder_name: client_name,\n    date_folder_name: date,\n    files_count: content_outputs.length * 2\n  }\n}];"
       },
       "id": "node-prepare",
       "name": "Prepare Delivery Manifest",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [460, 300]
     },
     {

@@ -23,7 +23,7 @@
         "headerParameters": {
           "parameters": [
             { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }
           ]
         },
         "options": {}
@@ -58,12 +58,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build post array based on quantity and mode\nconst quantity = $('Trigger').item.json.quantity || 3;\nconst mode = $('Trigger').item.json.mode || 'inception';\nconst topics = [\n  'Transformação de negócio com tecnologia',\n  'Resultados mensuráveis com automação',\n  'Cases de sucesso do mercado',\n  'Tendências de marketing digital',\n  'Como otimizar sua presença digital'\n];\n\nconst posts = [];\nfor (let i = 0; i < quantity; i++) {\n  posts.push({\n    index: i + 1,\n    type: i % 3 === 0 ? 'carousel' : 'image',\n    topic: topics[i % topics.length],\n    mode: mode,\n    cta_target: mode === 'atracao_fatal' ? 'funwheel_url' : null\n  });\n}\n\nreturn posts.map(p => ({json: p}));"
+        "jsCode": "// Build post array based on quantity and mode\nvar triggerData = $node['Trigger'].data.main[0][0].json;\nvar quantity = triggerData.quantity || 3;\nvar mode = triggerData.mode || 'inception';\nvar topics = [\n  'Transformação de negócio com tecnologia',\n  'Resultados mensuráveis com automação',\n  'Cases de sucesso do mercado',\n  'Tendências de marketing digital',\n  'Como otimizar sua presença digital'\n];\n\nvar posts = [];\nfor (var i = 0; i < quantity; i++) {\n  posts.push({\n    index: i + 1,\n    type: i % 3 === 0 ? 'carousel' : 'image',\n    topic: topics[i % topics.length],\n    mode: mode,\n    cta_target: mode === 'atracao_fatal' ? 'funwheel_url' : null\n  });\n}\n\nreturn posts.map(function(p) { return {json: p}; });"
       },
       "id": "node-4",
       "name": "Generate Post List",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [900, 400]
     },
     {
@@ -117,12 +117,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Image API stub — Story 4.3 will implement actual image generation\n// For now, save image_url as null (prompt is ready for manual use or future automation)\nconst imagePrompt = $('Designer Image Prompt').item.json.data.prompt;\nreturn [{\n  json: {\n    image_url: null,  // Story 4.3: call Nano Banana or Kling AI here\n    image_prompt: imagePrompt,\n    status: 'prompt_ready'\n  }\n}];"
+        "jsCode": "// Image API stub — Story 4.3 will implement actual image generation\n// For now, save image_url as null (prompt is ready for manual use or future automation)\nvar imagePrompt = $('Designer Image Prompt').item.json.data.prompt;\nreturn [{\n  json: {\n    image_url: null,\n    image_prompt: imagePrompt,\n    status: 'prompt_ready'\n  }\n}];"
       },
       "id": "node-7",
       "name": "Image API (stub)",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [1560, 300],
       "notes": "Story 4.3: Replace with actual Nano Banana / Kling AI API call"
     },
@@ -134,7 +134,7 @@
         "headerParameters": {
           "parameters": [
             { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -152,12 +152,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Aggregate all results\nconst allItems = $input.all();\nreturn [{\n  json: {\n    pipeline_complete: true,\n    posts_generated: allItems.length,\n    client_id: $('Trigger').first().json.client_id,\n    project_plan_id: $('Trigger').first().json.project_plan_id,\n    status: 'draft'\n  }\n}];"
+        "jsCode": "// Aggregate all results\nvar allItems = items;\nreturn [{\n  json: {\n    pipeline_complete: true,\n    posts_generated: allItems.length,\n    client_id: $node['Trigger'].data.main[0][0].json.client_id,\n    project_plan_id: $node['Trigger'].data.main[0][0].json.project_plan_id,\n    status: 'draft'\n  }\n}];"
       },
       "id": "node-9",
       "name": "Package Results",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [2000, 400]
     },
     {
