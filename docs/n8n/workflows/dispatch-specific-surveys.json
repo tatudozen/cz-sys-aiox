@@ -72,7 +72,7 @@
       "typeVersion": 4.2,
       "position": [900, 300],
       "continueOnFail": true
-    },
+    }
   ],
   "connections": {
     "Webhook: Dispatch Surveys": {"main": [[{"node": "Code: Determine Systems by Package", "type": "main", "index": 0}]]},
@@ -80,6 +80,7 @@
     "Supabase: Create Survey Record": {"main": [[{"node": "HTTP: Send Survey Link via WhatsApp", "type": "main", "index": 0}]]},
     "HTTP: Send Survey Link via WhatsApp": {"main": [[]]}
   },
+
   "active": false,
   "settings": {"executionOrder": "v1"},
   "meta": {
