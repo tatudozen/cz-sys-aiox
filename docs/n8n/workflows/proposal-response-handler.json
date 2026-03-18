@@ -98,7 +98,7 @@
         "url": "={{ $env.N8N_WEBHOOK_BASE_URL }}/webhook/dispatch-specific-surveys",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ proposal_id: $('Code: Extract Query Params').item.json.proposal_id, briefing_id: $('Supabase: Update → approved').item.json.briefing_id, package: $('Supabase: Update → approved').item.json.package }) }}",
+        "jsonBody": "={{ JSON.stringify({ proposal_id: $('Code: Extract Query Params').item.json.proposal_id, briefing_id: $('Supabase: Update → approved').item.json.briefing_id, package: $('Supabase: Update → approved').item.json.package, client_id: $('Supabase: Update → approved').item.json.client_id }) }}",
         "options": {}
       },
       "id": "trigger-surveys",
