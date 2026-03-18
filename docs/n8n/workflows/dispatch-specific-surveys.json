@@ -18,7 +18,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.item.json.body || $input.item.json;\nconst pkg = body.package || 'ia';\nconst systemsPerPackage = {\n  ia: ['content'],\n  art: ['content', 'funwheel'],\n  e: ['content', 'sales_page'],\n  combo_leads: ['content', 'funwheel'],\n  combo_cash: ['content', 'funwheel', 'sales_page']\n};\nconst systems = systemsPerPackage[pkg] || ['content'];\nreturn systems.map(system => ({\n  json: {\n    briefing_id: body.briefing_id,\n    proposal_id: body.proposal_id,\n    client_id: body.client_id,\n    system,\n    survey_url: 'https://survey.example.com/' + system\n  }\n}));"
+        "jsCode": "const inputItem = $input.first();\nconst raw = inputItem.json;\nconst body = raw.body || raw;\nconst pkg = body.package || 'ia';\nconst systemsPerPackage = {\n  ia: ['content'],\n  art: ['content', 'funwheel'],\n  e: ['content', 'sales_page'],\n  combo_leads: ['content', 'funwheel'],\n  combo_cash: ['content', 'funwheel', 'sales_page']\n};\nconst systems = systemsPerPackage[pkg] || ['content'];\nreturn systems.map(system => ({\n  json: {\n    briefing_id: body.briefing_id,\n    proposal_id: body.proposal_id,\n    client_id: body.client_id,\n    system,\n    survey_url: 'https://survey.example.com/' + system\n  }\n}));"
       },
       "id": "determine-systems",
       "name": "Code: Determine Systems by Package",
