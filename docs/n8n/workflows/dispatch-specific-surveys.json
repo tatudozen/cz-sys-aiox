@@ -73,18 +73,6 @@
       "position": [900, 300],
       "continueOnFail": true
     },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={\"success\": true, \"surveys_dispatched\": true}",
-        "options": {"responseCode": 200}
-      },
-      "id": "respond-ok",
-      "name": "Response: Success",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [1120, 300]
-    }
   ],
   "connections": {
     "Webhook: Dispatch Surveys": {"main": [[{"node": "Code: Determine Systems by Package", "type": "main", "index": 0}]]},
